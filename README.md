@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="../assets/images/logo.png" alt="Gradify Web Logo" width="120" onerror="this.onerror=null; this.src='https://github.com/gtxPrime/gradify-web/raw/main/assets/images/logo.png'"/>
+<img src="assets/icons/ic_launcher.webp" alt="Gradify Web Logo" width="120" onerror="this.onerror=null; this.src='https://github.com/gtxPrime/gradify-web/raw/main/assets/icons/ic_launcher.webp'"/>
 
 # Gradify Web
 
