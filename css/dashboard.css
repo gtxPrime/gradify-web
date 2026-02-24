@@ -1,0 +1,171 @@
+/* ========================================
+   Dashboard page-specific styles
+   ======================================== */
+
+/* ── Greeting ──────────────────────────── */
+.greeting-section {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-top: var(--spacing-lg);
+  padding-bottom: var(--spacing-sm);
+  gap: var(--spacing-md);
+}
+
+.greeting-label {
+  font-size: var(--font-size-sm);
+  opacity: 0.65;
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.greeting-name {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.2;
+  margin-top: 4px;
+}
+
+.study-time-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--color-hero-cards);
+  color: var(--color-text-icons);
+  padding: 10px 16px;
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg);
+  min-width: 80px;
+  text-align: center;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Focus Card ─────────────────────────── */
+.focus-card-wrapper { margin: var(--spacing-md) 0; }
+
+/* CSS safety net: always visible — GSAP animates from opacity 0 but clearProps restores this */
+.focus-card { opacity: 1 !important; }
+
+
+.focus-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+  min-height: 120px;
+  background: var(--color-tray-bg);
+  color: var(--color-main-bg);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.focus-card::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 180px; height: 180px;
+  background: rgba(221,232,157,0.08);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.focus-card::after {
+  content: '';
+  position: absolute;
+  bottom: -60px; left: 40px;
+  width: 140px; height: 140px;
+  background: rgba(11,229,193,0.06);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.focus-card-left { flex: 1; }
+
+.focus-card-label {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.7;
+  color: var(--color-hero-cards);
+  margin-bottom: 6px;
+}
+
+.focus-card-exam {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-main-bg);
+  margin-bottom: 4px;
+}
+
+.focus-card-days {
+  font-size: var(--font-size-sm);
+  opacity: 0.75;
+  color: var(--color-hero-cards);
+}
+
+.focus-card-right { flex-shrink: 0; }
+
+.focus-stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  align-items: flex-end;
+}
+
+.focus-stat { text-align: right; }
+
+.focus-stat-value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-hero-cards);
+  display: block;
+}
+
+.focus-stat-label {
+  font-size: var(--font-size-xs);
+  opacity: 0.6;
+  color: var(--color-main-bg);
+}
+
+/* ── Dashboard Cards ───────────────────── */
+.dash-card {
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.dash-card::before {
+  content: '';
+  position: absolute;
+  bottom: -20px; right: -20px;
+  width: 80px; height: 80px;
+  background: var(--color-email-pill-bg);
+  border-radius: 50%;
+  opacity: 0.5;
+  pointer-events: none;
+  transition: transform var(--transition-slow);
+}
+
+.dash-card:hover::before { transform: scale(1.5); }
+
+/* ── Exam timer rows in sidebar ─────────── */
+.exam-timer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+}
+
+/* ── Loader brand ───────────────────────── */
+.loader-logo {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--color-text-icons);
+}
+
+.loader-logo .loader-g { color: var(--color-glow); }

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tools – Gradify</title>
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
+  <style>
+    .tools-layout { max-width: 600px; margin: 0 auto; padding: calc(var(--nav-height) + 16px) var(--spacing-md) 40px; }
+
+    /* Header */
+    .tools-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .back-btn-circ {
+      width: 45px; height: 45px;
+      background: var(--color-card-bg);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow-xs);
+      cursor: pointer;
+      color: var(--color-text-icons);
+      flex-shrink: 0;
+    }
+    .tools-title { font-size: 24px; font-weight: 800; color: var(--color-text-icons); }
+
+    /* Segmented Tabs */
+    .tab-selector-container {
+      background: var(--color-email-pill-bg);
+      border-radius: var(--radius-lg);
+      padding: 4px;
+      display: flex;
+      position: relative;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .tab-item {
+      flex: 1; height: 52px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px; text-transform: uppercase;
+      color: var(--color-text-icons); opacity: 0.6;
+      cursor: pointer; z-index: 2;
+      transition: color 0.3s ease, opacity 0.3s ease;
+      user-select: none;
+    }
+    .tab-item.active { color: #fff; opacity: 1; }
+    .tab-indicator {
+      position: absolute; top: 4px; bottom: 4px; left: 4px;
+      width: calc(50% - 4px);
+      background: var(--color-tray-bg);
+      border-radius: calc(var(--radius-lg) - 2px);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1;
+    }
+    .tab-indicator.pos-1 { transform: translateX(100%); }
+
+    /* Panels */
+    .tool-panel { display: none; }
+    .tool-panel.active { display: block; animation: slideUp 0.35s ease; }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Card */
+    .calc-card {
+      background: var(--color-card-bg);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-xl);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Form labels inside tool */
+    .tool-label {
+      display: block;
+      font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+      font-weight: 700; color: var(--color-text-icons);
+      opacity: 0.5; margin-bottom: 8px;
+    }
+
+    /* Dynamic input groups */
+    .dyn-group { margin-top: 14px; }
+
+    /* Result */
+    .result-card {
+      margin-top: 24px; padding: 24px;
+      background: var(--color-hero-cards);
+      border-radius: var(--radius-lg);
+      text-align: center; color: var(--color-text-icons);
+      display: none;
+    }
+    .result-card.show { display: block; animation: popIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    @keyframes popIn {
+      0%   { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1);   opacity: 1; }
+    }
+    .result-score { font-size: 14px; opacity: 0.8; margin-bottom: 4px; }
+    .result-value { font-size: 38px; font-weight: 900; }
+
+    /* Error hint */
+    .formula-unavail {
+      color: var(--color-error); text-align: center;
+      font-size: 13px; padding: 12px 0;
+    }
+
+    /* CGPA rows */
+    .cgpa-row {
+      display: flex; gap: 12px; align-items: flex-end;
+      margin-bottom: 12px;
+    }
+    .cgpa-field { flex: 1; }
+    .cgpa-field .tool-label { margin-bottom: 4px; }
+    .cgpa-remove {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--color-error); cursor: pointer; font-size: 22px;
+      flex-shrink: 0;
+    }
+    .btn-row { display: flex; gap: 12px; margin-top: 24px; }
+  </style>
+</head>
+<body>
+
+<div class="page-loader" id="pageLoader">
+  <div class="loader-logo"><span style="color:var(--color-glow)">G</span>radify</div>
+  <div class="spinner"></div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- Sidebar (required by initSidebar in app.js) -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div style="font-size:22px;font-weight:700">
+      <span style="color:var(--color-hero-cards)">G</span><span style="color:var(--color-main-bg)">radify</span>
+    </div>
+  </div>
+  <div class="sidebar-profile" id="sidebarProfile" onclick="navigate('profile.html')">
+    <div class="sidebar-profile-avatar">
+      <img id="sidebarAvatar" src="" alt="Avatar" onerror="this.src='assets/icons/avatar-placeholder.svg'" />
+    </div>
+    <div>
+      <div class="sidebar-profile-name" id="sidebarName">Hello!</div>
+      <div class="sidebar-profile-sub" id="sidebarEmail">Tap to manage account</div>
+    </div>
+  </div>
+  <div class="sidebar-exam-countdown" id="sidebarExamCountdown">
+    <div style="font-size:11px;font-weight:600;color:var(--color-hero-cards);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">📅 Exam Countdown</div>
+    <div class="exam-timer-row"><span style="font-size:11px;color:rgba(250,246,233,0.7)">Quiz 1</span><span class="badge badge-dark" id="q1Timer">…</span></div>
+    <div class="exam-timer-row"><span style="font-size:11px;color:rgba(250,246,233,0.7)">Quiz 2</span><span class="badge badge-dark" id="q2Timer">…</span></div>
+    <div class="exam-timer-row"><span style="font-size:11px;color:rgba(250,246,233,0.7)">End Term</span><span class="badge badge-dark" id="etTimer">…</span></div>
+  </div>
+  <div class="sidebar-nav">
+    <a class="sidebar-item" href="index.html"><span class="icon">🏠</span> Dashboard</a>
+    <a class="sidebar-item" href="lectures.html"><span class="icon">🎬</span> Lectures</a>
+    <a class="sidebar-item" href="pyq.html"><span class="icon">📝</span> PYQ Practice</a>
+    <a class="sidebar-item" href="notes.html"><span class="icon">🗒️</span> My Notes</a>
+    <a class="sidebar-item active" href="tools.html"><span class="icon">🧮</span> Tools</a>
+    <a class="sidebar-item" href="stats.html"><span class="icon">📊</span> Study Stats</a>
+    <div class="sidebar-divider"></div>
+    <a class="sidebar-item" href="settings.html"><span class="icon">⚙️</span> Settings</a>
+    <a class="sidebar-item" href="profile.html"><span class="icon">👤</span> Profile</a>
+    <a class="sidebar-item" href="developers.html"><span class="icon">👨‍💻</span> Developers</a>
+  </div>
+  <div class="sidebar-footer">
+    <button class="btn btn-ghost btn-block" id="logoutBtn">
+      <span>🔐</span> <span id="logoutBtnText">Login / Sign Up</span>
+    </button>
+  </div>
+</nav>
+
+<!-- Top Nav -->
+<header class="app-nav">
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="nav-icon-btn" id="menuBtn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>
+      </svg>
+    </button>
+    <span style="font-weight:700;font-size:18px">🧮 Tools</span>
+  </div>
+  <div class="nav-actions">
+    <button class="nav-icon-btn" id="themeToggleBtn"><span id="themeIcon">🌙</span></button>
+    <div class="nav-avatar" onclick="navigate('profile.html')">
+      <img id="navAvatar" src="" alt="Profile" onerror="this.src='assets/icons/avatar-placeholder.svg'" />
+    </div>
+  </div>
+</header>
+
+<main class="main-content tools-layout">
+  <!-- Back + Title (matching Android activity_tools.xml header) -->
+  <div class="tools-header">
+    <div class="back-btn-circ" onclick="history.back()" title="Back">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+      </svg>
+    </div>
+    <div class="tools-title">Tools</div>
+  </div>
+
+  <!-- Segmented Tab Selector -->
+  <div class="tab-selector-container">
+    <div class="tab-item active" id="tabGrade" onclick="setTab(0)">Grade</div>
+    <div class="tab-item"        id="tabCgpa"  onclick="setTab(1)">CGPA</div>
+    <div class="tab-indicator"   id="tabIndicator"></div>
+  </div>
+
+  <!-- ── GRADE CALCULATOR ─────────────────────── -->
+  <div id="panelGrade" class="tool-panel active">
+    <div class="calc-card">
+      <div class="form-group">
+        <span class="tool-label">Select Level</span>
+        <select class="form-select" id="levelSelect">
+          <option value="">Select Level</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-top:16px">
+        <span class="tool-label">Select Subject</span>
+        <select class="form-select" id="subjectSelect" disabled>
+          <option value="">Select Subject</option>
+        </select>
+      </div>
+
+      <div id="dynamicInputs"></div>
+
+      <button class="btn btn-primary btn-block" id="calcGradeBtn" style="margin-top:24px;height:50px" disabled>
+        Calculate Grade
+      </button>
+
+      <div class="result-card" id="gradeResultCard">
+        <div class="result-score" id="gradeScoreText"></div>
+        <div class="result-value" id="gradeLabelText"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CGPA CALCULATOR ──────────────────────── -->
+  <div id="panelCgpa" class="tool-panel">
+    <div class="calc-card">
+      <div id="cgpaItems">
+        <div class="cgpa-row">
+          <div class="cgpa-field">
+            <span class="tool-label">Credits</span>
+            <input type="number" class="form-input cg-cred" value="4" min="1" max="10">
+          </div>
+          <div class="cgpa-field">
+            <span class="tool-label">Grade</span>
+            <input type="text" class="form-input cg-grade" placeholder="S, A, B…" style="text-transform:uppercase">
+          </div>
+          <div class="cgpa-remove" style="visibility:hidden">×</div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost"   style="flex:1" id="addRowBtn">+ Add Row</button>
+        <button class="btn btn-primary" style="flex:1" id="calcCgpaBtn">Calculate</button>
+      </div>
+
+      <div class="result-card" id="cgpaResultCard">
+        <div class="result-score">Cumulative GPA</div>
+        <div class="result-value" id="cgpaValueText">—</div>
+      </div>
+    </div>
+    <p style="margin-top:16px;font-size:11px;opacity:.5;text-align:center;line-height:1.5">
+      S=10 · A=9 · B=8 · C=7 · D=6 · E=4 · U/W=0 · I is excluded
+    </p>
+  </div>
+</main>
+
+<!-- mathjs (needed before module script) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+
+<script type="module">
+  import { initApp } from './js/app.js';
+  import { SUBJECTS_BY_LEVEL, fetchFormulas } from './js/api.js';
+
+  // initApp sets up sidebar, auth listener, page-loader hide, etc.
+  initApp('tools');
+
+  // Register custom math function for "Second Best of 3"
+  math.import({
+    SecondBest: (...args) => args.sort((a, b) => a - b)[args.length - 2]
+  }, { override: true });
+
+  // ─── State ─────────────────────────────────────────
+  let formulasData = null;
+
+  // ─── Tab switching ──────────────────────────────────
+  window.setTab = (idx) => {
+    ['tabGrade', 'tabCgpa'].forEach((id, i) =>
+      document.getElementById(id).classList.toggle('active', i === idx));
+    document.getElementById('tabIndicator').className =
+      'tab-indicator' + (idx === 1 ? ' pos-1' : '');
+    document.getElementById('panelGrade').classList.toggle('active', idx === 0);
+    document.getElementById('panelCgpa').classList.toggle('active', idx === 1);
+  };
+
+  // ─── Grade Calculator ───────────────────────────────
+  const levelSel   = document.getElementById('levelSelect');
+  const subjectSel = document.getElementById('subjectSelect');
+  const dynInputs  = document.getElementById('dynamicInputs');
+  const calcBtn    = document.getElementById('calcGradeBtn');
+  const gradeCard  = document.getElementById('gradeResultCard');
+
+  // 1. Load formulas first
+  try {
+    const res  = await fetchFormulas();
+    formulasData = res.formulas || res;
+  } catch (e) {
+    console.error('Formulas load failed:', e);
+    window.showToast('Could not load grade formulas', 'error');
+  }
+
+  // 2. Populate level dropdown
+  Object.keys(SUBJECTS_BY_LEVEL).forEach(lvl => {
+    levelSel.appendChild(Object.assign(document.createElement('option'),
+      { value: lvl, textContent: lvl }));
+  });
+
+  // 3. Level change
+  levelSel.addEventListener('change', () => {
+    const lvl = levelSel.value;
+    subjectSel.innerHTML = '<option value="">Select Subject</option>';
+    subjectSel.disabled = !lvl;
+    dynInputs.innerHTML = '';
+    calcBtn.disabled = true;
+    gradeCard.classList.remove('show');
+
+    if (lvl && formulasData) {
+      SUBJECTS_BY_LEVEL[lvl].forEach(sub => {
+        if (formulasData[sub]) {
+          subjectSel.appendChild(Object.assign(document.createElement('option'),
+            { value: sub, textContent: sub }));
+        }
+      });
+    }
+  });
+
+  // 4. Subject change → render dynamic inputs
+  subjectSel.addEventListener('change', () => {
+    const sub = subjectSel.value;
+    dynInputs.innerHTML = '';
+    gradeCard.classList.remove('show');
+    calcBtn.disabled = true;
+
+    if (!sub || !formulasData?.[sub]) return;
+
+    const f = formulasData[sub];
+    if (f.formula === 'Error') {
+      dynInputs.innerHTML = '<div class="formula-unavail">Formula not available for this subject.</div>';
+      return;
+    }
+
+    calcBtn.disabled = false;
+    f.inputs.forEach(raw => {
+      let label = raw;
+      if (raw === 'Qz1'  || raw === 'Quiz1') label = 'Quiz 1';
+      if (raw === 'Qz2'  || raw === 'Quiz2') label = 'Quiz 2';
+      if (raw === 'F')                       label = 'End Term';
+
+      const wrap = document.createElement('div');
+      wrap.className = 'dyn-group';
+      wrap.innerHTML = `
+        <span class="tool-label">${label}</span>
+        <input type="number" class="form-input g-input"
+          data-key="${raw}" placeholder="0 – 100" min="0" max="100" step="0.01">`;
+      dynInputs.appendChild(wrap);
+    });
+  });
+
+  // 5. Calculate grade
+  calcBtn.addEventListener('click', () => {
+    const sub    = subjectSel.value;
+    const inputs = dynInputs.querySelectorAll('.g-input');
+    const scope  = {};
+    let valid = true;
+
+    inputs.forEach(el => {
+      const v = parseFloat(el.value);
+      if (isNaN(v) || v < 0 || v > 100) {
+        el.style.borderColor = 'var(--color-error)';
+        valid = false;
+      } else {
+        el.style.borderColor = '';
+        scope[el.dataset.key] = v;
+      }
+    });
+
+    if (!valid) { window.showToast('Check your inputs (0–100)', 'error'); return; }
+
+    let fStr = formulasData[sub].formula;
+
+    // Special subject mappings (mirrors GradeCalculationFragment.java)
+    if (sub === 'Deep Learning Practice') {
+      fStr = fStr.split('Lowest').join('min(NPPE1, NPPE2, NPPE3)');
+      fStr = fStr.split('Second Best').join('SecondBest(NPPE1, NPPE2, NPPE3)');
+    }
+    if (sub === 'MLP')           fStr = fStr.split('OPEE1').join('OPE1').split('OPEE2').join('OPE2');
+    if (sub === 'Generative AI') fStr = fStr.split('OPEPE').join('OPPE');
+
+    // Formula string compat
+    fStr = fStr.split('Best(').join('max(')
+               .split('Math.max').join('max')
+               .split('Math.min').join('min');
+
+    try {
+      const score = math.evaluate(fStr, scope);
+      let grade = 'U / Fail';
+      if      (score >= 90) grade = 'S';
+      else if (score >= 80) grade = 'A';
+      else if (score >= 70) grade = 'B';
+      else if (score >= 60) grade = 'C';
+      else if (score >= 50) grade = 'D';
+      else if (score >= 40) grade = 'E';
+
+      document.getElementById('gradeScoreText').textContent = `Result: ${score.toFixed(2)} / 100`;
+      document.getElementById('gradeLabelText').textContent = `Grade: ${grade}`;
+      gradeCard.classList.add('show');
+      gradeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } catch (e) {
+      console.error('Calc error:', e);
+      window.showToast('Calculation error — check formula', 'error');
+    }
+  });
+
+  // ─── CGPA Calculator ────────────────────────────────
+  const GRADE_POINTS = { S:10, A:9, B:8, C:7, D:6, E:4, U:0, W:0, I:-1 };
+
+  document.getElementById('addRowBtn').addEventListener('click', () => {
+    const row = document.createElement('div');
+    row.className = 'cgpa-row';
+    row.innerHTML = `
+      <div class="cgpa-field">
+        <span class="tool-label">Credits</span>
+        <input type="number" class="form-input cg-cred" value="4" min="1" max="10">
+      </div>
+      <div class="cgpa-field">
+        <span class="tool-label">Grade</span>
+        <input type="text" class="form-input cg-grade" placeholder="S, A, B…" style="text-transform:uppercase">
+      </div>
+      <div class="cgpa-remove" title="Remove">×</div>`;
+    row.querySelector('.cgpa-remove').addEventListener('click', () => row.remove());
+    document.getElementById('cgpaItems').appendChild(row);
+  });
+
+  document.getElementById('calcCgpaBtn').addEventListener('click', () => {
+    const creds  = document.querySelectorAll('.cg-cred');
+    const grades = document.querySelectorAll('.cg-grade');
+    let totalW = 0, totalC = 0, ok = true;
+
+    for (let i = 0; i < creds.length; i++) {
+      const c = parseFloat(creds[i].value);
+      const g = grades[i].value.trim().toUpperCase();
+
+      if (isNaN(c) || c <= 0 || !g) {
+        window.showToast('Please fill all rows', 'error');
+        ok = false; break;
+      }
+
+      const p = GRADE_POINTS[g];
+      if (p === undefined) {
+        window.showToast(`Unknown grade "${g}" — use S A B C D E U W I`, 'error');
+        ok = false; break;
+      }
+      if (p === -1) continue; // 'I' — excluded
+
+      totalC += c;
+      totalW += c * p;
+    }
+
+    if (!ok) return;
+
+    const cgpa = totalC > 0 ? (totalW / totalC).toFixed(2) : '0.00';
+    document.getElementById('cgpaValueText').textContent = cgpa;
+    const card = document.getElementById('cgpaResultCard');
+    card.classList.add('show');
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+</script>
+</body>
+</html>

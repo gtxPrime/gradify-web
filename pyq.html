@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Gradify – Solve PYQ past questions with timer and exam mode." />
+  <title>PYQ Practice – Gradify</title>
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
+  <style>
+    .pyq-form { max-width: 540px; margin: 0 auto; }
+    .step-indicator {
+      display: flex; gap: 8px; align-items: center;
+      padding: var(--spacing-md) 0;
+    }
+    .step-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--color-divider); transition: background 0.3s, transform 0.3s;
+    }
+    .step-dot.active { background: var(--color-glow); transform: scale(1.4); }
+    .step-dot.done { background: var(--color-hero-cards); }
+
+    .select-container {
+      display: none; opacity: 0;
+      transition: opacity var(--transition-base);
+    }
+    .select-container.visible {
+      display: block; opacity: 1;
+      animation: slide-up 0.3s ease forwards;
+    }
+    .custom-select {
+      width: 100%; padding: 14px 16px;
+      border: 1.5px solid var(--color-divider); border-radius: var(--radius-md);
+      background: var(--color-card-bg); font-size: 15px;
+      color: var(--color-text-icons); cursor: pointer;
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2322333B' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 14px center;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .custom-select:focus { outline: none; border-color: var(--color-glow); box-shadow: 0 0 0 3px rgba(11,229,193,0.15); }
+
+    .mode-toggle-card {
+      background: var(--color-card-bg); border-radius: var(--radius-lg);
+      padding: var(--spacing-md); display: flex; justify-content: space-between;
+      align-items: center; border: 1.5px solid var(--color-divider);
+      margin-bottom: var(--spacing-md);
+    }
+    .mode-info h4 { font-size: 15px; margin-bottom: 2px; }
+    .mode-info p { font-size: 12px; opacity: 0.6; }
+
+    .start-btn {
+      width: 100%; padding: 16px;
+      background: var(--color-tray-bg);
+      color: var(--color-main-bg);
+      border: none; border-radius: var(--radius-full);
+      font-size: 16px; font-weight: 700;
+      cursor: pointer; letter-spacing: 0.4px;
+      transition: all var(--transition-spring);
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .start-btn:hover { background: var(--color-primary); transform: scale(1.01); box-shadow: var(--shadow-lg); }
+    .start-btn:active { transform: scale(0.98); }
+    .start-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .empty-pyq {
+      text-align: center; padding: var(--spacing-3xl) var(--spacing-md);
+    }
+    .inline-loader {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; opacity: 0.6; padding: 8px 0;
+    }
+    .inline-loader .spinner { width: 20px; height: 20px; border-width: 2px; }
+  </style>
+</head>
+<body>
+
+<div class="page-loader" id="pageLoader"><div class="loader-logo"><span style="color:var(--color-glow)">G</span>radify</div><div class="spinner"></div></div>
+<div class="toast-container" id="toastContainer"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header"><div style="font-size:22px;font-weight:700"><span style="color:var(--color-hero-cards)">G</span><span style="color:var(--color-main-bg)">radify</span></div></div>
+  <div class="sidebar-profile" id="sidebarProfile" onclick="navigate('profile.html')"><div class="sidebar-profile-avatar"><img id="sidebarAvatar" src="" alt="Avatar" onerror="this.src='assets/icons/avatar-placeholder.svg'" /></div><div><div class="sidebar-profile-name" id="sidebarName">Hello!</div><div class="sidebar-profile-sub" id="sidebarEmail">Tap to manage account</div></div></div>
+  <div class="sidebar-exam-countdown" id="sidebarExamCountdown">
+    <div style="font-size:11px;font-weight:600;color:var(--color-hero-cards);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">📅 Exam Countdown</div>
+    <div class="exam-timer-row"><span style="font-size:11px;color:rgba(250,246,233,0.7)">Quiz 1</span><span class="badge badge-dark" id="q1Timer">…</span></div>
+    <div class="exam-timer-row"><span style="font-size:11px;color:rgba(250,246,233,0.7)">Quiz 2</span><span class="badge badge-dark" id="q2Timer">…</span></div>
+    <div class="exam-timer-row"><span style="font-size:11px;color:rgba(250,246,233,0.7)">End Term</span><span class="badge badge-dark" id="etTimer">…</span></div>
+  </div>
+  <div class="sidebar-nav">
+    <a class="sidebar-item" href="index.html"><span class="icon">🏠</span> Dashboard</a>
+    <a class="sidebar-item" href="lectures.html"><span class="icon">🎬</span> Lectures</a>
+    <a class="sidebar-item active" href="pyq.html"><span class="icon">📝</span> PYQ Practice</a>
+    <a class="sidebar-item" href="notes.html"><span class="icon">🗒️</span> My Notes</a>
+    <a class="sidebar-item" href="tools.html"><span class="icon">🧮</span> Tools</a>
+    <a class="sidebar-item" href="stats.html"><span class="icon">📊</span> Study Stats</a>
+    <div class="sidebar-divider"></div>
+    <a class="sidebar-item" href="settings.html"><span class="icon">⚙️</span> Settings</a>
+    <a class="sidebar-item" href="profile.html"><span class="icon">👤</span> Profile</a>
+    <a class="sidebar-item" href="developers.html"><span class="icon">👨‍💻</span> Developers</a>
+  </div>
+  <div class="sidebar-footer"><button class="btn btn-ghost btn-block" id="logoutBtn"><span>🔐</span> <span id="logoutBtnText">Login / Sign Up</span></button></div>
+</nav>
+
+<header class="app-nav">
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="nav-icon-btn" onclick="history.back()" aria-label="Back">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button class="nav-icon-btn" id="menuBtn" aria-label="Menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+    </button>
+    <span style="font-weight:700;font-size:18px">📝 PYQ Practice</span>
+  </div>
+  <div class="nav-actions">
+    <div class="nav-avatar" onclick="navigate('profile.html')"><img id="navAvatar" src="" alt="Profile" onerror="this.src='assets/icons/avatar-placeholder.svg'" /></div>
+  </div>
+</header>
+
+<main class="main-content" style="padding-top: calc(var(--nav-height) + 24px)">
+
+  <!-- Empty state: no subjects configured -->
+  <div id="emptyPyqView" style="display:none">
+    <div class="empty-state">
+      <div class="empty-state-icon">📚</div>
+      <h3 class="empty-state-title">No Subjects Selected</h3>
+      <p class="empty-state-sub">Go to your profile and select your subjects to start practising PYQs.</p>
+      <button class="btn btn-primary btn-lg" onclick="navigate('profile.html')" style="margin-top:8px">Go to Profile →</button>
+    </div>
+  </div>
+
+  <!-- PYQ form -->
+  <div id="pyqFormView" class="pyq-form">
+    <div style="margin-bottom:var(--spacing-md)">
+      <h1 style="font-size:var(--font-size-xl);font-weight:800">📝 PYQ Practice</h1>
+      <p style="font-size:13px;opacity:0.6;margin-top:4px">Select your subject and quiz to begin</p>
+    </div>
+
+    <!-- Progress dots -->
+    <div class="step-indicator" id="stepIndicator">
+      <div class="step-dot active" id="dot1"></div>
+      <div class="step-dot" id="dot2"></div>
+      <div class="step-dot" id="dot3"></div>
+      <div class="step-dot" id="dot4"></div>
+    </div>
+
+    <!-- Step 1: Subject -->
+    <div class="form-group select-container visible" id="subjectContainer">
+      <label class="form-label">Subject</label>
+      <select class="custom-select" id="subjectSelect">
+        <option value="">– Select subject –</option>
+      </select>
+    </div>
+
+    <!-- Step 2: Quiz Type -->
+    <div class="form-group select-container" id="quizContainer">
+      <label class="form-label">Quiz Type</label>
+      <select class="custom-select" id="quizSelect">
+        <option value="">– Select quiz type –</option>
+        <option value="Quiz 1">Quiz 1</option>
+        <option value="Quiz 2">Quiz 2</option>
+        <option value="End Term">End Term</option>
+      </select>
+      <div class="inline-loader" id="quizLoader" style="display:none"><div class="spinner"></div>Loading…</div>
+    </div>
+
+    <!-- Step 3: Year -->
+    <div class="form-group select-container" id="yearContainer">
+      <label class="form-label">Year</label>
+      <select class="custom-select" id="yearSelect">
+        <option value="">– Select year –</option>
+      </select>
+      <div class="inline-loader" id="yearLoader" style="display:none"><div class="spinner"></div>Loading…</div>
+    </div>
+
+    <!-- Step 4: Session -->
+    <div class="form-group select-container" id="sessionContainer">
+      <label class="form-label">Session</label>
+      <select class="custom-select" id="sessionSelect">
+        <option value="">– Select session –</option>
+      </select>
+      <div class="inline-loader" id="sessionLoader" style="display:none"><div class="spinner"></div>Loading…</div>
+    </div>
+
+    <!-- Exam mode toggle -->
+    <div class="mode-toggle-card select-container" id="modeContainer" style="display:none">
+      <div class="mode-info">
+        <h4>Exam Mode</h4>
+        <p>Timed · No instant feedback · Realistic</p>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="examModeToggle" />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <!-- Start button -->
+    <button class="start-btn select-container" id="startQuizBtn" style="display:none" disabled>
+      <span>🚀</span> Start Practice
+    </button>
+  </div>
+
+  <div style="height:32px"></div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script type="module">
+  import { initApp } from './js/app.js';
+  initApp('pyq');
+</script>
+<script type="module" src="js/pyq.js"></script>
+
+</body>
+</html>

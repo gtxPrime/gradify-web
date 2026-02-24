@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+    />
+    <meta
+      name="description"
+      content="Gradify – Your IIT Madras BS study companion. Access lectures, PYQs, AI chat, notes, and track your study time."
+    />
+    <meta name="theme-color" content="#FAF6E9" />
+    <title>Gradify – Dashboard</title>
+
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/variables.css" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
+  </head>
+  <body>
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+      <div class="loader-logo">
+        <span class="loader-g">G</span><span class="loader-rest">radify</span>
+      </div>
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+    <!-- Announcement Banner (populated from Firebase RTDB) -->
+    <div
+      id="announcementBanner"
+      style="
+        display: none;
+        align-items: center;
+        gap: 10px;
+        background: var(--color-hero-cards);
+        color: var(--color-text-icons);
+        padding: 10px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        z-index: 200;
+        border-bottom: 1.5px solid rgba(0, 0, 0, 0.08);
+      "
+    >
+      <span
+        id="announcementBadge"
+        style="
+          display: none;
+          background: var(--color-tray-bg);
+          color: var(--color-main-bg);
+          padding: 2px 8px;
+          border-radius: 20px;
+          font-size: 11px;
+        "
+      ></span>
+      <span id="announcementMsg" style="flex: 1"></span>
+      <a
+        id="announcementLink"
+        href="#"
+        style="display: none; font-size: 12px; text-decoration: underline"
+        >View →</a
+      >
+      <button
+        id="announcementClose"
+        style="
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 2px 6px;
+          font-size: 16px;
+          opacity: 0.6;
+        "
+        aria-label="Dismiss"
+      >
+        ✕
+      </button>
+    </div>
+
+    <!-- Changelog Modal -->
+    <div
+      id="changelogModal"
+      style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 500;
+        align-items: flex-end;
+        justify-content: center;
+      "
+      onclick="this.style.display = 'none'"
+    >
+      <div
+        class="changelog-modal-inner"
+        onclick="event.stopPropagation()"
+        style="
+          background: var(--color-card-bg);
+          border-radius: 24px 24px 0 0;
+          padding: 24px;
+          max-height: 80vh;
+          overflow-y: auto;
+          width: 100%;
+          max-width: 600px;
+        "
+      >
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+          "
+        >
+          <h3 style="font-size: 18px; font-weight: 800">📋 What's New</h3>
+          <button
+            id="changelogClose"
+            style="
+              background: none;
+              border: none;
+              cursor: pointer;
+              font-size: 20px;
+              opacity: 0.5;
+            "
+          >
+            ✕
+          </button>
+        </div>
+        <div id="changelogList"></div>
+      </div>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ── SIDEBAR ─────────────────────────────── -->
+    <nav class="sidebar" id="sidebar" aria-label="Main navigation">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <span
+            style="
+              font-size: 22px;
+              font-weight: 700;
+              color: var(--color-hero-cards);
+            "
+            >G</span
+          >
+          <span
+            style="
+              font-size: 22px;
+              font-weight: 700;
+              color: var(--color-main-bg);
+            "
+            >radify</span
+          >
+        </div>
+      </div>
+
+      <div
+        class="sidebar-profile"
+        id="sidebarProfile"
+        onclick="navigate('profile.html')"
+      >
+        <div class="sidebar-profile-avatar">
+          <img
+            src=""
+            id="sidebarAvatar"
+            alt="Profile"
+            onerror="this.src = 'assets/icons/avatar-placeholder.svg'"
+          />
+        </div>
+        <div>
+          <div class="sidebar-profile-name" id="sidebarName">Hello!</div>
+          <div class="sidebar-profile-sub" id="sidebarEmail">
+            Tap to manage account
+          </div>
+        </div>
+      </div>
+
+      <!-- Exam Countdown -->
+      <div class="sidebar-exam-countdown" id="sidebarExamCountdown">
+        <div
+          style="
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--color-hero-cards);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+          "
+        >
+          📅 Exam Countdown
+        </div>
+        <div class="exam-timer-row">
+          <span style="font-size: 11px; color: rgba(250, 246, 233, 0.7)"
+            >Quiz 1</span
+          >
+          <span class="badge badge-dark" id="q1Timer">Loading…</span>
+        </div>
+        <div class="exam-timer-row">
+          <span style="font-size: 11px; color: rgba(250, 246, 233, 0.7)"
+            >Quiz 2</span
+          >
+          <span class="badge badge-dark" id="q2Timer">Loading…</span>
+        </div>
+        <div class="exam-timer-row">
+          <span style="font-size: 11px; color: rgba(250, 246, 233, 0.7)"
+            >End Term</span
+          >
+          <span class="badge badge-dark" id="etTimer">Loading…</span>
+        </div>
+      </div>
+
+      <div class="sidebar-nav">
+        <a class="sidebar-item active" href="index.html"
+          ><span class="icon"
+            ><img
+              src="assets/drawables/ic_home.svg"
+              width="18"
+              height="18"
+              alt=""
+          /></span>
+          Dashboard</a
+        >
+        <a class="sidebar-item" href="lectures.html"
+          ><span class="icon"
+            ><img
+              src="assets/drawables/ic_lecture.svg"
+              width="18"
+              height="18"
+              alt=""
+          /></span>
+          Lectures</a
+        >
+        <a class="sidebar-item" href="pyq.html"
+          ><span class="icon"
+            ><img
+              src="assets/drawables/ic_note.svg"
+              width="18"
+              height="18"
+              alt=""
+          /></span>
+          PYQ Practice</a
+        >
+        <a class="sidebar-item" href="notes.html"
+          ><span class="icon"
+            ><img
+              src="assets/drawables/ic_note.svg"
+              width="18"
+              height="18"
+              alt=""
+          /></span>
+          My Notes</a
+        >
+        <a class="sidebar-item" href="tools.html"
+          ><span class="icon"
+            ><img
+              src="assets/drawables/ic_calculator.svg"
+              width="18"
+              height="18"
+              alt=""
+          /></span>
+          Tools</a
+        >
+        <a class="sidebar-item" href="stats.html"
+          ><span class="icon"
+            ><img
+              src="assets/drawables/ic_circle_pile.svg"
+              width="18"
+              height="18"
+              alt=""
+          /></span>
+          Study Stats</a
+        >
+
+        <div class="sidebar-divider"></div>
+
+        <a class="sidebar-item" href="settings.html"
+          ><span class="icon"
+            ><img
+              src="assets/drawables/ic_settings.svg"
+              width="18"
+              height="18"
+              alt=""
+          /></span>
+          Settings</a
+        >
+        <a class="sidebar-item" href="profile.html"
+          ><span class="icon"
+            ><img
+              src="assets/drawables/ic_profile.svg"
+              width="18"
+              height="18"
+              alt=""
+          /></span>
+          Profile</a
+        >
+        <div class="sidebar-divider"></div>
+        <a
+          class="sidebar-item"
+          href="https://github.com/gtxPrime/Gradify"
+          target="_blank"
+          rel="noopener"
+          ><span class="icon"
+            ><img
+              src="assets/drawables/ic_github.svg"
+              width="18"
+              height="18"
+              alt=""
+          /></span>
+          GitHub</a
+        >
+        <a
+          class="sidebar-item"
+          href="https://forms.gle/ch7FinUjHQxDhL4c8"
+          target="_blank"
+          rel="noopener"
+          ><span class="icon"
+            ><img
+              src="assets/drawables/ic_edit.svg"
+              width="18"
+              height="18"
+              alt=""
+          /></span>
+          Contribute</a
+        >
+        <a
+          class="sidebar-item"
+          href="https://isthismyportfolio.site/donation.html"
+          target="_blank"
+          rel="noopener"
+          ><span class="icon"
+            ><img
+              src="assets/drawables/ic_heart.svg"
+              width="18"
+              height="18"
+              alt=""
+          /></span>
+          Donate</a
+        >
+        <a class="sidebar-item" href="developers.html"
+          ><span class="icon">👨‍💻</span> Developers</a
+        >
+      </div>
+
+      <div class="sidebar-footer">
+        <button
+          class="btn btn-ghost btn-block"
+          id="logoutBtn"
+          style="justify-content: flex-start; gap: 10px"
+        >
+          <span>🔐</span> <span id="logoutBtnText">Login / Sign Up</span>
+        </button>
+        <div
+          style="
+            font-size: 10px;
+            opacity: 0.4;
+            text-align: center;
+            margin-top: 8px;
+            color: var(--color-main-bg);
+          "
+        >
+          Gradify Web v1.0 · IIT Madras BS
+        </div>
+      </div>
+    </nav>
+
+    <!-- ── TOP NAV ─────────────────────────────── -->
+    <header class="app-nav">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <button
+          class="nav-icon-btn"
+          id="menuBtn"
+          aria-label="Open menu"
+          aria-haspopup="true"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+          >
+            <line x1="4" y1="6" x2="20" y2="6" />
+            <line x1="4" y1="12" x2="20" y2="12" />
+            <line x1="4" y1="18" x2="20" y2="18" />
+          </svg>
+        </button>
+        <div class="nav-logo">
+          <span style="color: var(--color-text-icons); font-weight: 800">G</span
+          ><span style="color: var(--color-primary)">radify</span>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button
+          class="nav-icon-btn"
+          id="changelogBtn"
+          aria-label="What's new"
+          title="What's new"
+          style="position: relative"
+        >
+          <img
+            src="assets/drawables/ic_info.svg"
+            width="20"
+            height="20"
+            alt="Changelog"
+            style="opacity: 0.7"
+          />
+        </button>
+        <div
+          class="nav-avatar"
+          onclick="navigate('profile.html')"
+          title="Profile"
+        >
+          <img
+            id="navAvatar"
+            src=""
+            alt="Profile"
+            onerror="this.src = 'assets/icons/avatar-placeholder.svg'"
+          />
+        </div>
+      </div>
+    </header>
+
+    <!-- ── MAIN CONTENT ────────────────────────── -->
+    <main class="main-content">
+      <!-- Greeting Section -->
+      <section class="greeting-section" id="greetingSection">
+        <div>
+          <p class="greeting-label" id="greetText">Good Morning!</p>
+          <h1 class="greeting-name" id="greetName">Welcome back 👋</h1>
+        </div>
+        <div class="study-time-badge">
+          <span>⏱</span>
+          <span id="todayStudyTime">0h 00m</span>
+          <span style="font-size: 10px; opacity: 0.65">today</span>
+        </div>
+      </section>
+
+      <!-- Focus Card (Upcoming Exam + Study Time) -->
+      <section class="focus-card-wrapper" id="focusCardWrapper">
+        <div
+          class="focus-card card card--hero card--clickable"
+          id="focusCard"
+          onclick="navigate('stats.html')"
+        >
+          <div class="focus-card-left">
+            <p class="focus-card-label">Next Exam</p>
+            <h2 class="focus-card-exam" id="nextExamName">Loading…</h2>
+            <p class="focus-card-days" id="nextExamDays">–</p>
+          </div>
+          <div class="focus-card-right">
+            <div class="focus-stats">
+              <div class="focus-stat">
+                <span class="focus-stat-value" id="weekNum">–</span>
+                <span class="focus-stat-label">Current Week</span>
+              </div>
+              <div class="focus-stat">
+                <span class="focus-stat-value" id="totalStudyToday">0h</span>
+                <span class="focus-stat-label">Studied Today</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quick Access Cards -->
+      <section class="section-header">
+        <h2 class="section-title">Quick Access</h2>
+        <div style="display: flex; align-items: center; gap: 8px">
+          <span class="badge" id="subjectBadge">Foundation</span>
+          <button
+            class="nav-icon-btn"
+            id="dashboardMenuBtn"
+            style="width: 32px; height: 32px; opacity: 0.7"
+            aria-label="Manage Dashboard"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+            >
+              <circle cx="12" cy="12" r="1" />
+              <circle cx="12" cy="5" r="1" />
+              <circle cx="12" cy="19" r="1" />
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <div class="dashboard-grid" id="dashboardGrid">
+        <!-- PYQ -->
+        <div
+          class="card card--clickable dash-card"
+          id="pyqCard"
+          onclick="navigate('pyq.html')"
+          tabindex="0"
+          role="button"
+        >
+          <button class="card-action-btn" aria-label="More">⋮</button>
+          <div class="card-icon" style="background: var(--color-hero-cards)">
+            📝
+          </div>
+          <div class="card-title">PYQ Practice</div>
+          <div class="card-sub" id="pyqSub">Solve past papers</div>
+        </div>
+
+        <!-- Lectures -->
+        <div
+          class="card card--clickable dash-card"
+          id="lecturesCard"
+          onclick="navigate('lectures.html')"
+          tabindex="0"
+          role="button"
+        >
+          <button class="card-action-btn" aria-label="More">⋮</button>
+          <div class="card-icon" style="background: var(--color-email-pill-bg)">
+            🎬
+          </div>
+          <div class="card-title">Lectures</div>
+          <div class="card-sub" id="lecSub">Loading week…</div>
+        </div>
+
+        <!-- Notes -->
+        <div
+          class="card card--clickable dash-card"
+          id="notesCard"
+          onclick="navigate('notes.html')"
+          tabindex="0"
+          role="button"
+        >
+          <button class="card-action-btn" aria-label="More">⋮</button>
+          <div class="card-icon" style="background: var(--color-email-pill-bg)">
+            🗒️
+          </div>
+          <div class="card-title">My Notes</div>
+          <div class="card-sub" id="notesSub">View & edit notes</div>
+        </div>
+
+        <!-- Tools -->
+        <div
+          class="card card--clickable dash-card"
+          id="toolsCard"
+          onclick="navigate('tools.html')"
+          tabindex="0"
+          role="button"
+        >
+          <button class="card-action-btn" aria-label="More">⋮</button>
+          <div class="card-icon" style="background: var(--color-email-pill-bg)">
+            <img
+              src="assets/drawables/ic_calculator.svg"
+              width="24"
+              height="24"
+              alt="Tools"
+              style="filter: brightness(0.4)"
+            />
+          </div>
+          <div class="card-title">Tools</div>
+          <div class="card-sub">GPA · Formulas · Calc</div>
+        </div>
+
+        <!-- Stats -->
+        <div
+          class="card card--clickable dash-card"
+          id="statsCard"
+          onclick="navigate('stats.html')"
+          tabindex="0"
+          role="button"
+        >
+          <button class="card-action-btn" aria-label="More">⋮</button>
+          <div class="card-icon" style="background: var(--color-email-pill-bg)">
+            <img
+              src="assets/drawables/ic_circle_pile.svg"
+              width="24"
+              height="24"
+              alt="Stats"
+              style="filter: brightness(0.4)"
+            />
+          </div>
+          <div class="card-title">Study Stats</div>
+          <div class="card-sub" id="statsSub">Track progress</div>
+        </div>
+
+      </div>
+
+      <!-- Continue Watching (persisted from localStorage) -->
+      <section id="continueSection" style="display: none">
+        <div class="section-header">
+          <h2 class="section-title">Continue Watching</h2>
+        </div>
+        <div
+          class="card card--clickable"
+          id="continueCard"
+          style="display: flex; gap: 16px; align-items: center"
+        >
+          <img
+            id="continueThumbnail"
+            src=""
+            alt="Thumbnail"
+            style="
+              width: 90px;
+              height: 54px;
+              border-radius: 10px;
+              object-fit: cover;
+              flex-shrink: 0;
+            "
+          />
+          <div style="flex: 1; min-width: 0">
+            <div
+              style="
+                font-weight: 600;
+                font-size: 14px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+              "
+              id="continueTitle"
+            >
+              –
+            </div>
+            <div
+              style="font-size: 12px; opacity: 0.6; margin-top: 2px"
+              id="continueSub"
+            >
+              –
+            </div>
+            <div class="progress-bar" style="margin-top: 8px">
+              <div
+                class="progress-fill"
+                id="continueProgress"
+                style="width: 0%"
+              ></div>
+            </div>
+          </div>
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="var(--color-text-icons)"
+            style="flex-shrink: 0"
+          >
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </div>
+      </section>
+
+      <!-- Recent Notes Preview -->
+      <section id="recentNotesSection" style="display: none; margin-top: 24px">
+        <div class="section-header">
+          <h2 class="section-title">Recent Notes</h2>
+          <a
+            href="notes.html"
+            style="font-size: 13px; color: var(--color-primary)"
+            >See all →</a
+          >
+        </div>
+        <div id="recentNotesList"></div>
+      </section>
+
+      <div style="height: 32px"></div>
+    </main>
+
+    <!-- ── SCRIPTS ─────────────────────────────── -->
+    <!-- GSAP CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <!-- Firebase -->
+    <script type="module">
+      import { initApp } from "./js/app.js";
+      initApp("index");
+    </script>
+
+    <!-- Page-specific modules -->
+    <script type="module" src="js/dashboard.js"></script>
+    <script type="module">
+      import {
+        initAnnouncementBanner,
+        initChangelog,
+      } from "./js/notifications.js";
+      initAnnouncementBanner();
+      initChangelog();
+    </script>
+  </body>
+</html>

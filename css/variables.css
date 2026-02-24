@@ -1,0 +1,113 @@
+/* ========================================
+   Gradify Web – Design Tokens
+   Exact match to Android app colors.xml (Latest colors section)
+   and activity_main.xml UI usage
+   ======================================== */
+
+:root {
+  /* ── Core App Colors (from colors.xml Latest colors) ── */
+  --color-main-bg:       #FAF6E9;   /* mainBg       – warm cream background   */
+  --color-text-icons:    #22333B;   /* textIcons    – dark navy text & icons  */
+  --color-hero-cards:    #DDE89D;   /* heroCards    – lime green accent card  */
+  --color-tray-bg:       #22333B;   /* trayBg       – nav drawer background   */
+  --color-card-bg:       #FFFFFF;   /* cardBg       – white card surface      */
+  --color-email-pill-bg: #F2EFE1;   /* emailPillBg  – warm off-white pills    */
+  --color-divider:       #E0E0E0;   /* dividerColor – light grey divider      */
+  --color-selected-chip: #22333B;   /* selectedChip – dark navy chip          */
+  --color-unselected-chip: #FFFFFF; /* unselectedChip – white chip            */
+  --color-save-btn:      #DDE89D;   /* saveBtnColor – lime green save button  */
+  --color-edit-icon-bg:  #22333B;   /* editIconBg   – dark icon background    */
+  --color-muted-text:    #5E6E75;   /* unselectedLevelText – muted label      */
+
+  /* ── Icon pill tints (from activity_main.xml backgroundTint) ── */
+  --color-pill-amber:    #FFF8E1;   /* PYQ card icon pill, Notes icon pill    */
+  --color-pill-orange:   #FFF3E0;   /* Lectures card icon pill                */
+  --color-pill-overlay:  rgba(255,255,255,0.2); /* focus card icon overlay    */
+
+  /* ── Primary Palette ───────────────── */
+  --color-primary:       #243447;   /* primaryColor                           */
+  --color-primary-dark:  #0A2E28;   /* primaryDarkColor                       */
+  --color-glow:          #0BE5C1;   /* glowColor – teal glow                 */
+
+  /* ── Semantic ──────────────────────── */
+  --color-success: #4CAF50;
+  --color-error:   #F44336;
+  --color-warning: #FF9800;
+  --color-info:    #1976D2;
+  --color-gray:    #9E9E9E;
+
+  /* ── Pie / Chart Colors ────────────── */
+  --color-pie-1: #DDE89D;
+  --color-pie-2: #A8C66C;
+  --color-pie-3: #739E4D;
+  --color-pie-4: #22333B;
+
+  /* ── Typography ────────────────────── */
+  --font-family: "Inter", "Outfit", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono:   "JetBrains Mono", "Fira Code", "Courier New", monospace;
+
+  --font-size-xs:   0.75rem;
+  --font-size-sm:   0.875rem;
+  --font-size-base: 1rem;
+  --font-size-md:   1.125rem;
+  --font-size-lg:   1.25rem;
+  --font-size-xl:   1.5rem;
+  --font-size-2xl:  2rem;
+  --font-size-3xl:  2.5rem;
+
+  --font-weight-regular: 400;
+  --font-weight-medium:  500;
+  --font-weight-semi:    600;
+  --font-weight-bold:    700;
+
+  --line-height-tight:   1.25;
+  --line-height-normal:  1.5;
+  --line-height-relaxed: 1.75;
+
+  /* ── Spacing ───────────────────────── */
+  --spacing-xs:  4px;
+  --spacing-sm:  8px;
+  --spacing-md:  16px;
+  --spacing-lg:  24px;
+  --spacing-xl:  32px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
+
+  /* ── Border Radius ─────────────────── */
+  --radius-sm:   8px;
+  --radius-md:   16px;
+  --radius-lg:   24px;   /* matches cardCornerRadius="24dp" */
+  --radius-xl:   32px;
+  --radius-full: 9999px;
+
+  /* ── Shadows (light-theme appropriate) ── */
+  --shadow-xs:   0 1px 3px  rgba(34, 51, 59, 0.06);
+  --shadow-sm:   0 2px 8px  rgba(34, 51, 59, 0.08);
+  --shadow-md:   0 4px 16px rgba(34, 51, 59, 0.10);
+  --shadow-lg:   0 8px 32px rgba(34, 51, 59, 0.14);
+  --shadow-xl:   0 16px 48px rgba(34, 51, 59, 0.18);
+  --shadow-glow: 0 0 24px rgba(11, 229, 193, 0.25);
+
+  /* ── Transitions ───────────────────── */
+  --transition-fast:   0.15s ease;
+  --transition-base:   0.25s ease;
+  --transition-slow:   0.4s ease;
+  --transition-spring: 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ── Layout ───────────────────────── */
+  --nav-height:    60px;
+  --sidebar-width: 280px;   /* matches nav drawer width="280dp" */
+
+  /* ── Z-index layers ────────────────── */
+  --z-dropdown: 100;
+  --z-sticky:   200;
+  --z-overlay:  300;
+  --z-modal:    400;
+  --z-toast:    500;
+
+  /* ── Breakpoints ───────────────────── */
+  --bp-mobile:  480px;
+  --bp-tablet:  768px;
+  --bp-desktop: 1024px;
+  --bp-wide:    1280px;
+}

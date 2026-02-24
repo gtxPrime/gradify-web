@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Gradify – Lecture player with AI chat and notes."
+    />
+    <title>Player – Gradify</title>
+    <link rel="stylesheet" href="css/variables.css" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
+    <style>
+      /* ── Root ── */
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      /* ── Top nav ── */
+      .player-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        height: 52px;
+        background: var(--color-tray-bg);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px;
+        gap: 10px;
+      }
+      .player-nav-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .player-nav-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--color-main-bg);
+        max-width: 260px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .player-back-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(255, 255, 255, 0.15);
+        color: var(--color-main-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: background 0.2s;
+      }
+      .player-back-btn:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+      .session-badge {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 99px;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--color-hero-cards);
+        flex-shrink: 0;
+      }
+
+      /* ── 3-col grid ── */
+      .yt-layout {
+        position: fixed;
+        top: 52px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: grid;
+        grid-template-columns: 300px 1fr 380px;
+        grid-template-rows: 1fr;
+        overflow: hidden;
+        gap: 0;
+        background: var(--color-main-bg);
+      }
+
+      /* ── Left: video list ── */
+      .yt-left {
+        background: var(--color-card-bg);
+        border-right: 1px solid var(--color-divider);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .yt-left-header {
+        padding: 16px 16px 10px;
+        border-bottom: 1px solid var(--color-divider);
+        flex-shrink: 0;
+      }
+      .yt-left-header h3 {
+        font-size: 14px;
+        font-weight: 800;
+        color: var(--color-text-icons);
+        margin: 0 0 3px;
+      }
+      .yt-left-header small {
+        font-size: 11px;
+        opacity: 0.5;
+      }
+      .video-list-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px 0 16px;
+      }
+
+      .week-header {
+        padding: 14px 16px 6px;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        color: var(--color-primary);
+        opacity: 0.55;
+        border-top: 1px solid var(--color-divider);
+        margin-top: 8px;
+      }
+      .week-header:first-child {
+        border-top: none;
+        margin-top: 0;
+      }
+
+      .video-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 9px 16px;
+        cursor: pointer;
+        transition: background 0.15s;
+        margin: 1px 8px;
+        border-radius: 12px;
+      }
+      .video-item:hover {
+        background: var(--color-email-pill-bg);
+      }
+      .video-item.playing {
+        background: rgba(221, 232, 157, 0.4);
+      }
+      .video-thumb {
+        width: 88px;
+        height: 52px;
+        border-radius: 10px;
+        object-fit: cover;
+        flex-shrink: 0;
+        background: var(--color-divider);
+      }
+      .video-item-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .video-item-title {
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .video-item-meta {
+        font-size: 10px;
+        opacity: 0.45;
+        margin-top: 3px;
+        letter-spacing: 0.2px;
+      }
+      .video-playing-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--color-glow);
+        flex-shrink: 0;
+        margin-top: 9px;
+        display: none;
+      }
+      .video-item.playing .video-playing-dot {
+        display: block;
+      }
+
+      /* ── Center: player ── */
+      .yt-center {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: #000;
+      }
+      .yt-player-wrap {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16/9;
+        flex-shrink: 0;
+        background: #000;
+        max-height: calc(100vh - 52px - 48px);
+      }
+      #youtubeIframe, #youtubeIframe iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+      .yt-info-bar {
+        background: var(--color-main-bg);
+        padding: 16px 20px 0;
+        flex-shrink: 0;
+      }
+      .yt-video-title {
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1.4;
+        color: var(--color-text-icons);
+        margin: 0 0 8px;
+      }
+      .yt-meta-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 12px;
+        opacity: 0.5;
+        padding-bottom: 12px;
+      }
+      .yt-week-badge {
+        background: var(--color-tray-bg);
+        color: var(--color-main-bg);
+        padding: 4px 12px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      /* ── Right: Notes + AI panel ── */
+      .yt-right {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border-left: 1px solid var(--color-divider);
+        background: var(--color-main-bg);
+      }
+      .yt-right-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--color-divider);
+        flex-shrink: 0;
+        background: var(--color-card-bg);
+      }
+      .yt-tab {
+        flex: 1;
+        padding: 13px 8px;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        border-bottom: 2.5px solid transparent;
+        color: var(--color-text-icons);
+        opacity: 0.45;
+        transition: all 0.2s;
+        user-select: none;
+        position: relative;
+      }
+      .yt-tab.active {
+        opacity: 1;
+        border-bottom-color: var(--color-tray-bg);
+      }
+      .yt-tab-badge {
+        position: absolute;
+        top: 8px;
+        right: 16px;
+        min-width: 16px;
+        height: 16px;
+        border-radius: 99px;
+        background: var(--color-glow);
+        color: var(--color-text-icons);
+        font-size: 9px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 3px;
+      }
+      .yt-tab-panel {
+        display: none;
+        flex: 1;
+        overflow-y: auto;
+        flex-direction: column;
+      }
+      .yt-tab-panel.active {
+        display: flex;
+      }
+
+      /* ── Notes panel ── */
+      .notes-panel {
+        padding: 14px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .sym-row {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+      }
+      .sym-btn {
+        padding: 5px 10px;
+        font-size: 14px;
+        border: 1px solid var(--color-divider);
+        border-radius: 8px;
+        background: var(--color-card-bg);
+        cursor: pointer;
+        font-family: var(--font-mono);
+        transition:
+          background 0.15s,
+          transform 0.1s;
+        line-height: 1;
+      }
+      .sym-btn:hover {
+        background: var(--color-hero-cards);
+        transform: scale(1.08);
+      }
+
+      .note-textarea {
+        width: 100%;
+        border: 1.5px solid var(--color-divider);
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 13px;
+        font-family: var(--font-family);
+        resize: none;
+        height: 120px;
+        color: var(--color-text-icons);
+        background: var(--color-card-bg);
+        transition: border-color 0.2s;
+        box-sizing: border-box;
+        line-height: 1.6;
+      }
+      .note-textarea:focus {
+        outline: none;
+        border-color: var(--color-glow);
+      }
+
+      .note-actions-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: nowrap;
+      }
+      .ts-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 600;
+        border: 1.5px solid var(--color-divider);
+        background: var(--color-card-bg);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background 0.15s;
+        flex-shrink: 0;
+      }
+      .ts-btn.locked {
+        background: var(--color-hero-cards);
+        border-color: var(--color-hero-cards);
+      }
+      .imp-label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .save-note-btn {
+        margin-left: auto;
+        padding: 7px 18px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 700;
+        background: var(--color-tray-bg);
+        color: var(--color-main-bg);
+        border: none;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: opacity 0.2s;
+      }
+      .save-note-btn:hover {
+        opacity: 0.85;
+      }
+
+      .saved-notes-divider {
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 0.35;
+        padding: 6px 0 2px;
+      }
+
+      .saved-note {
+        background: var(--color-card-bg);
+        border-radius: 12px;
+        padding: 10px 12px;
+        border-left: 3px solid transparent;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .saved-note:hover {
+        background: var(--color-email-pill-bg);
+      }
+      .saved-note.important {
+        border-left-color: var(--color-hero-cards);
+      }
+      .saved-note-text {
+        font-size: 12px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .saved-note-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 7px;
+      }
+      .saved-note-ts-badge {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--color-tray-bg);
+        background: rgba(34, 51, 59, 0.08);
+        padding: 3px 9px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .saved-note-delete {
+        font-size: 11px;
+        opacity: 0.3;
+        cursor: pointer;
+        border: none;
+        background: none;
+        padding: 0;
+        color: var(--color-error);
+        transition: opacity 0.2s;
+      }
+      .saved-note-delete:hover {
+        opacity: 1;
+      }
+
+      /* ── AI Chat panel ── */
+      .chat-panel {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 0;
+        overflow: hidden;
+      }
+      .chat-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--color-divider);
+        flex-shrink: 0;
+      }
+      .chat-chip {
+        padding: 6px 12px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 600;
+        border: 1.5px solid var(--color-divider);
+        background: var(--color-card-bg);
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          border-color 0.15s,
+          transform 0.1s;
+      }
+      .chat-chip:hover {
+        background: var(--color-hero-cards);
+        border-color: var(--color-hero-cards);
+        transform: scale(1.03);
+      }
+      .chat-messages-wrap {
+        flex: 1;
+        overflow-y: auto;
+        padding: 14px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .chat-msg {
+        max-width: 85%;
+        padding: 12px 14px;
+        border-radius: 16px;
+        font-size: 14px;
+        line-height: 1.5;
+        word-wrap: break-word;
+        font-family: var(--font-family);
+      }
+      .chat-msg.user {
+        align-self: flex-end;
+        background: var(--color-primary);
+        color: #ffffff;
+        border-bottom-right-radius: 4px;
+      }
+      .chat-msg.ai {
+        align-self: flex-start;
+        background: var(--color-card-bg);
+        color: var(--color-text-icons);
+        border-bottom-left-radius: 4px;
+        box-shadow: 0 1px 3px rgba(34, 51, 59, 0.06);
+      }
+      .chat-msg.typing {
+        opacity: 0.6;
+        font-style: italic;
+      }
+      .chat-input-row {
+        display: flex;
+        gap: 8px;
+        padding: 10px 14px;
+        border-top: 1px solid var(--color-divider);
+        flex-shrink: 0;
+        background: var(--color-card-bg);
+      }
+      .chat-input {
+        flex: 1;
+        padding: 9px 14px;
+        border: 1.5px solid var(--color-divider);
+        border-radius: 12px;
+        background: var(--color-main-bg);
+        font-size: 13px;
+        color: var(--color-text-icons);
+        transition: border-color 0.2s;
+      }
+      .chat-input:focus {
+        outline: none;
+        border-color: var(--color-glow);
+      }
+      .chat-send-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: var(--color-tray-bg);
+        color: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition:
+          transform 0.15s,
+          background 0.15s;
+      }
+      .chat-send-btn:hover {
+        transform: scale(1.1);
+      }
+      .chat-send-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .no-api-key {
+        padding: 14px;
+        font-size: 12px;
+        opacity: 0.6;
+        text-align: center;
+        line-height: 1.7;
+      }
+      .no-api-key a {
+        color: var(--color-tray-bg);
+        font-weight: 600;
+      }
+
+      /* Responsive: hide sidebar on small screens */
+      @media (max-width: 900px) {
+        .yt-layout {
+          grid-template-columns: 1fr 300px;
+        }
+        .yt-left {
+          display: none;
+        }
+      }
+      @media (max-width: 600px) {
+        .yt-layout {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto auto 1fr;
+        }
+        .yt-right {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-loader" id="pageLoader">
+      <div class="loader-logo">
+        <span style="color: var(--color-glow)">G</span>radify
+      </div>
+      <div class="spinner"></div>
+    </div>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Top nav -->
+    <header class="player-nav">
+      <div class="player-nav-left">
+        <button
+          class="player-back-btn"
+          onclick="history.back()"
+          aria-label="Back"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+        <div>
+          <div class="player-nav-title" id="navSubjectName">Loading…</div>
+          <div
+            style="
+              font-size: 10px;
+              color: rgba(255, 255, 255, 0.55);
+              line-height: 1;
+            "
+            id="navVideoTitle"
+          >
+            Select a video
+          </div>
+        </div>
+      </div>
+      <div class="session-badge">🎬 <span id="sessionTimer">00:00</span></div>
+    </header>
+
+    <!-- 3-column layout -->
+    <div class="yt-layout">
+      <!-- ── LEFT: Video list ── -->
+      <div class="yt-left">
+        <div class="yt-left-header">
+          <h3 id="leftSubjectName">Lectures</h3>
+          <small id="leftLecCount">Loading…</small>
+        </div>
+        <div class="video-list-scroll" id="videoListContainer">
+          <div style="padding: 20px; text-align: center; opacity: 0.5">
+            <div class="spinner" style="margin: 0 auto 8px"></div>
+            <div>Loading lectures…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CENTER: Player ── -->
+      <div class="yt-center">
+        <div class="yt-player-wrap">
+          <div
+            id="youtubeIframe"
+            style="position: absolute; inset: 0; width: 100%; height: 100%"
+          ></div>
+        </div>
+        <div
+          class="yt-info-bar"
+          style="background: var(--color-main-bg); flex: 1; overflow-y: auto"
+        >
+          <h2 class="yt-video-title" id="videoTitle">
+            Select a video to begin
+          </h2>
+          <div class="yt-meta-row">
+            <span id="weekBadgeLabel" class="yt-week-badge">–</span>
+            <span
+              id="vidPositionLabel"
+              style="font-size: 11px; opacity: 0.45"
+            ></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── RIGHT: Notes + AI ── -->
+      <div class="yt-right">
+        <div class="yt-right-tabs" id="rightTabs">
+          <div class="yt-tab active" data-tab="notes">
+            🗒️ Notes<span
+              class="yt-tab-badge"
+              id="notesBadge"
+              style="display: none"
+            ></span>
+          </div>
+          <div class="yt-tab" data-tab="ai">
+            ✨ AI Chat<span
+              class="yt-tab-badge"
+              id="chatBadge"
+              style="display: none"
+            ></span>
+          </div>
+        </div>
+
+        <!-- Notes panel -->
+        <div class="yt-tab-panel active" id="panelNotes">
+          <div class="notes-panel">
+            <div class="sym-row" id="symbolsRow">
+              <button class="sym-btn" data-sym="√">√</button>
+              <button class="sym-btn" data-sym="∫">∫</button>
+              <button class="sym-btn" data-sym="π">π</button>
+              <button class="sym-btn" data-sym="θ">θ</button>
+              <button class="sym-btn" data-sym="Σ">Σ</button>
+              <button class="sym-btn" data-sym="λ">λ</button>
+              <button class="sym-btn" data-sym="∞">∞</button>
+              <button class="sym-btn" data-sym="≈">≈</button>
+              <button class="sym-btn" data-sym="→">→</button>
+              <button class="sym-btn" data-sym="≤">≤</button>
+              <button class="sym-btn" data-sym="≥">≥</button>
+              <button class="sym-btn" data-sym="±">±</button>
+            </div>
+            <textarea
+              class="note-textarea"
+              id="noteTextarea"
+              placeholder="Type your note… supports Markdown-like formatting"
+            ></textarea>
+            <div class="note-actions-row">
+              <button class="ts-btn" id="timestampBtn">
+                ⏱ <span id="timestampLabel">Link time</span>
+              </button>
+              <label class="imp-label"
+                ><input
+                  type="checkbox"
+                  id="importantCheck"
+                  style="width: 14px; height: 14px"
+                />
+                ⭐</label
+              >
+              <button class="save-note-btn" id="saveNoteBtn">Save</button>
+            </div>
+            <div
+              class="saved-notes-divider"
+              id="notesListLabel"
+              style="display: none"
+            >
+              Saved notes
+            </div>
+            <div id="savedNotesList"></div>
+          </div>
+        </div>
+
+        <!-- AI Chat panel -->
+        <div class="yt-tab-panel" id="panelAi">
+          <div class="chat-panel">
+            <div class="chat-chips" id="chatChips">
+              <button class="chat-chip" data-msg="Summarise this lecture video">
+                📄 Summarize
+              </button>
+              <button
+                class="chat-chip"
+                data-msg="Generate detailed study notes for this lecture"
+              >
+                📝 Notes
+              </button>
+              <button
+                class="chat-chip"
+                data-msg="Explain the main concept in simple terms"
+              >
+                💡 Explain
+              </button>
+              <button
+                class="chat-chip"
+                data-msg="List important formulas or equations from this lecture"
+              >
+                🔢 Formulas
+              </button>
+            </div>
+            <div class="chat-messages-wrap" id="chatMessages"></div>
+            <div id="noApiKeyMsg" class="no-api-key" style="display: none">
+              🔑 Add your Gemini API key in
+              <a href="settings.html">Settings</a> to use AI chat.
+            </div>
+            <div class="chat-input-row">
+              <input
+                type="text"
+                class="chat-input"
+                id="chatInput"
+                placeholder="Ask about this lecture…"
+                autocomplete="off"
+              />
+              <button class="chat-send-btn" id="chatSendBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                  <path d="M2 21l21-9L2 3v7l15 2-15 2z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- end yt-layout -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script type="module">
+      import { initApp } from "./js/app.js";
+      initApp("player");
+    </script>
+    <script type="module" src="js/player.js"></script>
+  </body>
+</html>

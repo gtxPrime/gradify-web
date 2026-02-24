@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Gradify PYQ Quiz – Solve past exam questions." />
+  <title>PYQ Quiz – Gradify</title>
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
+  <style>
+    .quiz-layout {
+      max-width: 760px; margin: 0 auto;
+      padding: calc(var(--nav-height) + 16px) var(--spacing-md) 100px;
+    }
+
+    /* ── Top bar ── */
+    .quiz-topbar {
+      position: sticky; top: var(--nav-height); z-index: 50;
+      background: var(--color-main-bg); padding: 10px 0 12px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      border-bottom: 1px solid var(--color-divider); margin-bottom: 16px;
+    }
+    .progress-info { font-size: 13px; opacity: 0.6; white-space: nowrap; }
+    .progress-info strong { color: var(--color-text-icons); }
+
+    /* ── Timer ── */
+    #timerWrap { display: flex; align-items: center; gap: 6px; }
+    #timerText  { font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .timer-warning { color: var(--color-warning) !important; }
+    .timer-danger  { color: var(--color-error) !important; animation: pulse 1s infinite; }
+
+    /* ── Question card ── */
+    .question-card {
+      background: var(--color-card-bg); border-radius: 20px;
+      padding: 20px; margin-bottom: 14px; box-shadow: var(--shadow-sm);
+    }
+    .q-meta { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+    .q-badge {
+      font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 99px;
+      background: var(--color-hero-cards); color: var(--color-text-icons);
+    }
+    .q-type-label { font-size: 11px; opacity: 0.5; font-style: italic; }
+    #questionText { font-size: 16px; font-weight: 600; line-height: 1.65; margin-bottom: 14px; }
+    #questionImage { max-width: 100%; border-radius: 12px; cursor: zoom-in; margin-bottom: 12px; }
+
+    /* ── Extra info section (shown for extra_info entries) ── */
+    #extraInfoSection {
+      background: var(--color-email-pill-bg); border-radius: 16px;
+      padding: 18px; margin-bottom: 14px;
+    }
+    #extraInfoSection h4 { margin-bottom: 10px; font-size: 14px; opacity: 0.6; }
+    #extraInfoText { font-size: 15px; line-height: 1.65; }
+    #extraInfoImage { max-width: 100%; border-radius: 12px; margin-top: 10px; }
+
+    /* ── Option rows (single + multi) ── */
+    .option-row {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 13px 14px; border-radius: 14px; margin-bottom: 8px;
+      border: 1.5px solid var(--color-divider); background: var(--color-card-bg);
+      cursor: pointer; transition: all 0.18s; line-height: 1.5;
+    }
+    .option-row:hover { border-color: var(--color-tray-bg); background: var(--color-email-pill-bg); }
+    .option-row.selected { border-color: var(--color-tray-bg); background: rgba(34,51,59,0.06); }
+    .option-row.correct-highlight { border-color: #4CAF50; background: rgba(76,175,80,0.08); }
+    .option-row.correct-highlight .option-radio,
+    .option-row.correct-highlight .option-checkbox { background: #4CAF50; }
+
+    .option-radio, .option-checkbox {
+      width: 20px; height: 20px; flex-shrink: 0; border-radius: 50%;
+      border: 2px solid var(--color-divider); background: transparent;
+      margin-top: 1px; transition: background 0.15s;
+    }
+    .option-checkbox { border-radius: 6px; }
+    .option-row.selected .option-radio { background: var(--color-tray-bg); border-color: var(--color-tray-bg); }
+    .option-row.selected .option-checkbox { background: var(--color-tray-bg); border-color: var(--color-tray-bg); }
+    .option-checkbox.checked { background: var(--color-tray-bg); border-color: var(--color-tray-bg); }
+    .option-label { flex: 1; font-size: 15px; }
+    .option-image { max-width: 100%; border-radius: 10px; margin-top: 6px; cursor: zoom-in; }
+
+    /* ── Text input ── */
+    #textInputWrap { padding: 4px 0; }
+    #textAnswer {
+      width: 100%; padding: 13px 14px; border-radius: 14px;
+      border: 1.5px solid var(--color-divider); background: var(--color-card-bg);
+      font-size: 16px; color: var(--color-text-icons);
+      outline: none; transition: border-color 0.15s;
+    }
+    #textAnswer:focus { border-color: var(--color-tray-bg); }
+    #correctAnswerHint {
+      font-size: 13px; color: #4CAF50; font-weight: 600; margin-top: 8px; padding: 8px 12px;
+      background: rgba(76,175,80,0.08); border-radius: 10px;
+    }
+
+    /* ── Result card ── */
+    #resultCard {
+      background: var(--color-card-bg); border-radius: 16px; padding: 16px;
+      margin-top: 12px; border-left: 4px solid var(--color-divider);
+    }
+    .result-title.correct  { color: #4CAF50; font-weight: 800; font-size: 16px; }
+    .result-title.partial  { color: #FFC107; font-weight: 800; font-size: 16px; }
+    .result-title.wrong    { color: #F44336; font-weight: 800; font-size: 16px; }
+    #resultCorrectAnswer   { font-size: 14px; margin-top: 6px; line-height: 1.5; }
+    #resultExplanation     { font-size: 13px; opacity: 0.6; margin-top: 6px; }
+
+    /* ── Extra info FAB ── */
+    #extraInfoFab {
+      position: fixed; right: 20px; bottom: 90px; width: 48px; height: 48px;
+      border-radius: 50%; background: var(--color-tray-bg); color: var(--color-main-bg);
+      border: none; font-size: 20px; cursor: pointer; z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    /* ── Bottom nav ── */
+    .quiz-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--color-card-bg); padding: 10px 16px 16px;
+      border-top: 1px solid var(--color-divider);
+      display: flex; gap: 8px; align-items: center; z-index: 50;
+    }
+    .q-nav-btn {
+      flex: 1; padding: 13px; border-radius: 99px;
+      font-weight: 700; font-size: 14px; cursor: pointer;
+      border: 1.5px solid var(--color-divider); background: var(--color-card-bg);
+      color: var(--color-text-icons); transition: all 0.18s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .q-nav-btn.primary { background: var(--color-tray-bg); color: var(--color-main-bg); border-color: transparent; }
+    .q-nav-btn.check   { background: var(--color-hero-cards); color: var(--color-text-icons); border-color: transparent; }
+    .q-nav-btn:hover:not(:disabled) { transform: scale(1.02); }
+
+    /* ── Modals ── */
+    .quiz-modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300;
+      display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    .quiz-modal-backdrop.visible { display: flex; animation: fade-in 0.25s; }
+    .quiz-modal {
+      background: var(--color-card-bg); border-radius: 24px;
+      padding: 28px 24px; width: 100%; max-width: 500px; max-height: 90vh;
+      overflow-y: auto;
+    }
+    .quiz-modal h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+    .quiz-modal p  { font-size: 14px; opacity: 0.6; margin-bottom: 20px; }
+
+    /* Results modal specifics */
+    .r-score-row { display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px; }
+    #rScore    { font-size: 54px; font-weight: 900; line-height: 1; color: var(--color-tray-bg); }
+    #rTotal    { font-size: 24px; font-weight: 700; opacity: 0.5; }
+    #rPercent  { font-size: 20px; font-weight: 700; }
+    #rFeedback { font-size: 18px; font-weight: 700; margin: 8px 0 16px; }
+    .summary-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+    .summary-row {
+      padding: 8px 14px; border-radius: 99px;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .summary-row.correct { background: rgba(76,175,80,0.15); color: #4CAF50; }
+    .summary-row.partial { background: rgba(255,193,7,0.15);  color: #FFC107; }
+    .summary-row.wrong   { background: rgba(244,67,54,0.12);  color: #F44336; }
+
+    /* Extra info dialog */
+    #extraInfoModal { text-align: left; }
+
+    /* Lightbox */
+    #lightbox {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+      z-index: 500; display: none; align-items: center; justify-content: center;
+    }
+    #lightbox.visible { display: flex; }
+    #lightboxImg { max-width: 95vw; max-height: 90vh; object-fit: contain; border-radius: 12px; }
+    #lightbox .close-lb {
+      position: absolute; top: 16px; right: 16px; width: 40px; height: 40px;
+      border-radius: 50%; border: none; background: rgba(255,255,255,0.2);
+      color: white; font-size: 20px; cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+    }
+
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+  </style>
+</head>
+<body>
+
+<div class="page-loader" id="pageLoader"><div class="loader-logo"><span style="color:var(--color-glow)">G</span>radify</div><div class="spinner"></div></div>
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Nav bar -->
+<header class="app-nav">
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="nav-icon-btn" onclick="confirmQuit()" aria-label="Quit quiz">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <strong id="quizSubjectName" style="font-size:14px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">PYQ</strong>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span id="modeLabel" style="font-size:12px;opacity:0.5"></span>
+    <!-- Exam timer (hidden in practice mode) -->
+    <span id="timerWrap" style="display:none">⏱ <strong id="timerText">00:00</strong></span>
+  </div>
+</header>
+
+<div class="quiz-layout">
+
+  <!-- Sticky top bar: progress info + progress bar -->
+  <div class="quiz-topbar">
+    <div class="progress-info" id="progressText">Question 1/–</div>
+    <div style="flex:1;max-width:180px">
+      <div class="progress-bar">
+        <div class="progress-fill" id="quizProgressFill" style="width:0%"></div>
+      </div>
+      <div style="text-align:right;font-size:11px;opacity:0.4;margin-top:2px">
+        <span id="currentQ">1</span>/<span id="totalQ">–</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Extra info section (shown for extra_info entries) -->
+  <div id="extraInfoSection" style="display:none">
+    <h4>ℹ️ Extra Information</h4>
+    <div id="extraInfoText"></div>
+    <img id="extraInfoImage" alt="Info" style="display:none" />
+  </div>
+
+  <!-- Question card (hidden during extra_info entries) -->
+  <div id="questionCardInner">
+    <div class="question-card">
+      <div class="q-meta">
+        <span class="q-badge" id="questionMarks">0 Marks</span>
+        <span class="q-type-label" id="questionTypeLabel"></span>
+      </div>
+
+      <div id="questionText">Loading…</div>
+      <img id="questionImage" alt="Question" style="display:none" />
+
+      <!-- Single choice -->
+      <div id="singleChoiceWrap" style="display:none"></div>
+
+      <!-- Multiple choice -->
+      <div id="multiChoiceWrap" style="display:none"></div>
+
+      <!-- Text / numeric input -->
+      <div id="textInputWrap" style="display:none">
+        <input id="textAnswer" type="text" placeholder="Type your answer here…" autocomplete="off" />
+        <div id="correctAnswerHint" style="display:none"></div>
+      </div>
+
+      <!-- Result card (shown after Check Answer or in Review mode) -->
+      <div id="resultCard" style="display:none">
+        <div class="result-title correct" id="resultTitle"></div>
+        <div id="resultCorrectAnswer"></div>
+        <div id="resultExplanation"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /quiz-layout -->
+
+<!-- Extra info FAB (only shown when current question has extra info) -->
+<button id="extraInfoFab" onclick="showExtraInfoDialog()" style="display:none" title="View extra information">ℹ️</button>
+
+<!-- Bottom nav -->
+<div class="quiz-nav">
+  <button class="q-nav-btn" id="prevBtn" onclick="prevQuestion()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+    Prev
+  </button>
+  <!-- Check Answer (practice mode only) -->
+  <button class="q-nav-btn check" id="checkAnswerBtn" onclick="checkAnswer()" style="display:none">✓ Check</button>
+  <button class="q-nav-btn primary" id="nextBtn" onclick="nextQuestion()">Next</button>
+</div>
+
+<!-- ── Confirm Submit Modal ── -->
+<div class="quiz-modal-backdrop" id="confirmSubmitModal">
+  <div class="quiz-modal">
+    <h3>Submit Quiz?</h3>
+    <p>Are you sure you want to submit? You won't be able to change answers after submitting.</p>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="cancelSubmit()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" onclick="doSubmit()">Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Results Modal ── -->
+<div class="quiz-modal-backdrop" id="resultsModal">
+  <div class="quiz-modal">
+    <div style="text-align:center;margin-bottom:20px">
+      <div class="r-score-row" style="justify-content:center">
+        <span id="rScore">0</span><span id="rTotal">/0</span>
+      </div>
+      <div id="rPercent">0%</div>
+      <div id="rFeedback">–</div>
+    </div>
+
+    <p style="font-size:12px;font-weight:700;opacity:0.45;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:6px">Question Breakdown</p>
+    <div class="summary-list" id="questionSummaryList"></div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:18px">
+      <button class="btn btn-primary btn-block btn-lg" onclick="reviewAnswers()">📖 Review Answers</button>
+      <button class="btn btn-ghost btn-block" onclick="closeToPYQ()">← Back to PYQ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Extra Info Dialog Modal ── -->
+<div class="quiz-modal-backdrop" id="extraInfoModal">
+  <div class="quiz-modal" id="extraInfoModalInner">
+    <h3>ℹ️ Extra Information</h3>
+    <div id="extraInfoModalText" style="font-size:15px;line-height:1.65;margin-bottom:14px"></div>
+    <img id="extraInfoModalImage" alt="" style="max-width:100%;border-radius:12px;display:none;margin-bottom:14px" />
+    <button class="btn btn-ghost btn-block" onclick="closeExtraInfoDialog()">Close</button>
+  </div>
+</div>
+
+<!-- ── Lightbox ── -->
+<div id="lightbox" onclick="closeLightbox()">
+  <button class="close-lb" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" alt="Full size" />
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script type="module">
+  import { initApp } from './js/app.js';
+  initApp('pyq-quiz');
+</script>
+<script type="module" src="js/pyq-quiz.js"></script>
+
+</body>
+</html>

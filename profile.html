@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile – Gradify</title>
+    <link rel="stylesheet" href="css/variables.css" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
+    <style>
+      .profile-layout {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: calc(var(--nav-height) + 24px) 24px 140px;
+      }
+      /* 2-column grid on wide screens */
+      .profile-grid {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 16px;
+        align-items: start;
+      }
+      @media (max-width: 800px) {
+        .profile-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .profile-left {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .profile-right {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      /* ── Hero card ── */
+      .profile-hero {
+        background: var(--color-tray-bg);
+        border-radius: 24px;
+        padding: 32px 24px 24px;
+        text-align: center;
+        color: var(--color-main-bg);
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 16px;
+      }
+      .profile-hero::before {
+        content: "";
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: rgba(221, 232, 157, 0.1);
+        pointer-events: none;
+      }
+      .profile-avatar-wrap {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 14px;
+      }
+      .profile-avatar-img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--color-hero-cards);
+      }
+      .signout-icon-btn {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(0, 0, 0, 0.25);
+        color: var(--color-main-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      .profile-name {
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--color-main-bg);
+      }
+      .profile-email {
+        font-size: 13px;
+        opacity: 0.65;
+        margin-top: 4px;
+      }
+      .profile-uid {
+        font-size: 10px;
+        opacity: 0.35;
+        margin-top: 4px;
+        font-family: monospace;
+      }
+
+      /* ── Shared section block ── */
+      .section-block {
+        background: var(--color-card-bg);
+        border-radius: 20px;
+        padding: 18px;
+        margin-bottom: 14px;
+      }
+      .section-title {
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 14px;
+      }
+
+      /* ── Level toggle (mirrors level_selector_container) ── */
+      .level-toggle {
+        display: flex;
+        background: var(--color-email-pill-bg);
+        border-radius: 14px;
+        padding: 4px;
+        gap: 2px;
+        margin-bottom: 20px;
+      }
+      .level-btn {
+        flex: 1;
+        padding: 9px 4px;
+        border: none;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        background: transparent;
+        color: var(--color-text-icons);
+        opacity: 0.5;
+        transition: all 0.2s;
+      }
+      .level-btn.active {
+        background: var(--color-tray-bg);
+        color: var(--color-main-bg);
+        opacity: 1;
+      }
+
+      /* ── Subject counter ── */
+      .subject-counter {
+        font-size: 10px;
+        font-weight: 700;
+        opacity: 0.45;
+        text-align: center;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
+
+      /* ── Chip groups ── */
+      .chip-group-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        opacity: 0.45;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        padding: 14px 0 8px;
+      }
+      .chip-group-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--color-hero-cards);
+        flex-shrink: 0;
+      }
+      .chip-group-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+
+      /* ── Subject chips (mirrors Android Chip) ── */
+      .subject-chip {
+        padding: 8px 16px;
+        border-radius: 99px;
+        border: 1.5px solid var(--color-divider);
+        background: var(--color-email-pill-bg);
+        color: var(--color-text-icons);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.18s;
+        min-height: 40px;
+      }
+      .subject-chip:hover {
+        border-color: var(--color-tray-bg);
+      }
+      .subject-chip.selected {
+        background: var(--color-hero-cards);
+        color: var(--color-tray-bg);
+        border-color: transparent;
+        font-weight: 600;
+      }
+      .chip-check {
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      /* ── Bottom selection tray (mirrors selection_tray) ── */
+      .selection-tray {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--color-card-bg);
+        border-top: 1px solid var(--color-divider);
+        padding: 14px 20px 24px;
+        z-index: 200;
+        transform: translateY(100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .selection-tray.visible {
+        transform: translateY(0);
+      }
+      .tray-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      .tray-count {
+        font-size: 12px;
+        font-weight: 700;
+        opacity: 0.55;
+      }
+      .tray-save-btn {
+        padding: 8px 20px;
+        border-radius: 99px;
+        border: none;
+        background: var(--color-tray-bg);
+        color: var(--color-main-bg);
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.15s;
+      }
+      .tray-save-btn:hover {
+        opacity: 0.85;
+      }
+      .tray-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .tray-pill {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px 6px 14px;
+        border-radius: 99px;
+        background: var(--color-hero-cards);
+        color: var(--color-tray-bg);
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .tray-remove {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(0, 0, 0, 0.12);
+        color: var(--color-tray-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        cursor: pointer;
+        line-height: 1;
+        padding: 0;
+      }
+
+      /* ── Account info rows ── */
+      .row-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--color-divider);
+      }
+      .row-item:last-child {
+        border-bottom: none;
+      }
+      .row-label {
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .row-value {
+        font-size: 13px;
+        opacity: 0.55;
+      }
+
+      /* ── Login / Sign-in card ── */
+      .auth-card {
+        background: var(--color-card-bg);
+        border-radius: 24px;
+        padding: 32px 24px;
+        text-align: center;
+        margin-bottom: 14px;
+      }
+      .google-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        width: 100%;
+        padding: 14px 20px;
+        border-radius: 99px;
+        border: 1.5px solid var(--color-divider);
+        background: white;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .google-btn:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        transform: scale(1.01);
+      }
+      .auth-divider {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 14px 0;
+        color: var(--color-divider);
+        font-size: 12px;
+      }
+      .auth-divider::before,
+      .auth-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--color-divider);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-loader" id="pageLoader">
+      <div class="loader-logo">
+        <span style="color: var(--color-glow)">G</span>radify
+      </div>
+      <div class="spinner"></div>
+    </div>
+    <div class="toast-container" id="toastContainer"></div>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div style="font-size: 22px; font-weight: 700">
+          <span style="color: var(--color-hero-cards)">G</span
+          ><span style="color: var(--color-main-bg)">radify</span>
+        </div>
+      </div>
+      <div class="sidebar-profile" id="sidebarProfile">
+        <div class="sidebar-profile-avatar">
+          <img
+            id="sidebarAvatar"
+            src=""
+            alt="Avatar"
+            onerror="this.src = 'assets/icons/avatar-placeholder.svg'"
+          />
+        </div>
+        <div>
+          <div class="sidebar-profile-name" id="sidebarName">Hello!</div>
+          <div class="sidebar-profile-sub" id="sidebarEmail">
+            Manage account
+          </div>
+        </div>
+      </div>
+      <div class="sidebar-exam-countdown" id="sidebarExamCountdown">
+        <div
+          style="
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--color-hero-cards);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+          "
+        >
+          📅 Exam Countdown
+        </div>
+        <div class="exam-timer-row">
+          <span style="font-size: 11px; color: rgba(250, 246, 233, 0.7)"
+            >Quiz 1</span
+          ><span class="badge badge-dark" id="q1Timer">…</span>
+        </div>
+        <div class="exam-timer-row">
+          <span style="font-size: 11px; color: rgba(250, 246, 233, 0.7)"
+            >Quiz 2</span
+          ><span class="badge badge-dark" id="q2Timer">…</span>
+        </div>
+        <div class="exam-timer-row">
+          <span style="font-size: 11px; color: rgba(250, 246, 233, 0.7)"
+            >End Term</span
+          ><span class="badge badge-dark" id="etTimer">…</span>
+        </div>
+      </div>
+      <div class="sidebar-nav">
+        <a class="sidebar-item" href="index.html"
+          ><span class="icon">🏠</span> Dashboard</a
+        >
+        <a class="sidebar-item" href="lectures.html"
+          ><span class="icon">🎬</span> Lectures</a
+        >
+        <a class="sidebar-item" href="pyq.html"
+          ><span class="icon">📝</span> PYQ Practice</a
+        >
+        <a class="sidebar-item" href="notes.html"
+          ><span class="icon">🗒️</span> My Notes</a
+        >
+        <a class="sidebar-item" href="tools.html"
+          ><span class="icon">🧮</span> Tools</a
+        >
+        <a class="sidebar-item" href="stats.html"
+          ><span class="icon">📊</span> Study Stats</a
+        >
+        <div class="sidebar-divider"></div>
+        <a class="sidebar-item" href="settings.html"
+          ><span class="icon">⚙️</span> Settings</a
+        >
+        <a class="sidebar-item active" href="profile.html"
+          ><span class="icon">👤</span> Profile</a
+        >
+        <a class="sidebar-item" href="developers.html"
+          ><span class="icon">👨‍💻</span> Developers</a
+        >
+      </div>
+      <div class="sidebar-footer">
+        <button class="btn btn-ghost btn-block" id="logoutBtn">
+          <span>🔐</span> <span id="logoutBtnText">Login / Sign Up</span>
+        </button>
+      </div>
+    </nav>
+
+    <header class="app-nav">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <button class="nav-icon-btn" onclick="history.back()" aria-label="Back">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+        <button class="nav-icon-btn" id="menuBtn" aria-label="Menu">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+          >
+            <line x1="4" y1="6" x2="20" y2="6" />
+            <line x1="4" y1="12" x2="20" y2="12" />
+            <line x1="4" y1="18" x2="20" y2="18" />
+          </svg>
+        </button>
+        <span style="font-weight: 700; font-size: 18px">👤 Profile</span>
+      </div>
+      <div class="nav-actions">
+        <div
+          class="nav-avatar"
+          onclick="navigate('profile.html')"
+          title="Profile"
+        >
+          <img
+            id="navAvatar"
+            src=""
+            alt="Profile"
+            onerror="this.src = 'assets/icons/avatar-placeholder.svg'"
+          />
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content profile-layout">
+      <!-- ── Logged out ── -->
+      <div id="loggedOutView">
+        <div class="auth-card">
+          <div style="font-size: 60px; margin-bottom: 16px">🎓</div>
+          <h2 style="margin-bottom: 8px">Welcome to Gradify</h2>
+          <p style="font-size: 13px; opacity: 0.55; margin-bottom: 24px">
+            Sign in to save progress, notes, and study stats.<br />Only
+            <strong>ds.study.iitm.ac.in</strong> accounts are allowed.
+          </p>
+
+          <button class="google-btn" id="googleSignInBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <path
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                fill="#4285F4"
+              />
+              <path
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                fill="#34A853"
+              />
+              <path
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                fill="#FBBC05"
+              />
+              <path
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                fill="#EA4335"
+              />
+            </svg>
+            Sign in with Google
+          </button>
+
+          <p style="font-size: 11px; opacity: 0.4; margin-top: 24px">
+            By signing in, you agree to use Gradify responsibly for academic
+            learning.
+          </p>
+        </div>
+      </div>
+
+      <!-- ── Logged in ── -->
+      <div id="loggedInView" style="display: none">
+        <div class="profile-grid">
+          <!-- LEFT: hero + account + danger -->
+          <div class="profile-left">
+            <!-- Profile hero -->
+            <div class="profile-hero">
+              <div class="profile-avatar-wrap">
+                <img
+                  id="profileAvatar"
+                  src=""
+                  alt="Profile"
+                  class="profile-avatar-img"
+                  onerror="this.src = 'assets/icons/avatar-placeholder.svg'"
+                />
+                <button
+                  class="signout-icon-btn"
+                  id="profileSignOutIcon"
+                  title="Sign Out"
+                  style="display: none"
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                  >
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                  </svg>
+                </button>
+              </div>
+              <h2 class="profile-name" id="profileName">–</h2>
+              <p class="profile-email" id="profileEmailDisplay">–</p>
+              <p class="profile-uid" id="profileUid"></p>
+            </div>
+
+            <!-- Account info -->
+            <div class="section-block">
+              <div class="section-title">🔐 Account</div>
+              <div class="row-item">
+                <span class="row-label">Name</span
+                ><span class="row-value" id="accName">–</span>
+              </div>
+              <div class="row-item">
+                <span class="row-label">Email</span
+                ><span class="row-value" id="accEmail">–</span>
+              </div>
+              <div class="row-item">
+                <span class="row-label">Provider</span
+                ><span class="row-value" id="accProvider">–</span>
+              </div>
+              <div class="row-item">
+                <span class="row-label">Joined</span
+                ><span class="row-value" id="accJoined">–</span>
+              </div>
+            </div>
+
+            <!-- Danger zone -->
+            <div class="section-block">
+              <div class="section-title" style="color: var(--color-error)">
+                ⚠️ Danger Zone
+              </div>
+              <button
+                class="btn btn-ghost btn-block"
+                id="clearDataBtn"
+                style="
+                  border-color: var(--color-error);
+                  color: var(--color-error);
+                  margin-bottom: 8px;
+                "
+              >
+                🗑️ Clear All Local Data
+              </button>
+              <button
+                class="btn btn-ghost btn-block"
+                id="signOutBtn"
+                style="
+                  border-color: var(--color-error);
+                  color: var(--color-error);
+                "
+              >
+                🔓 Sign Out
+              </button>
+            </div>
+          </div>
+          <!-- /profile-left -->
+
+          <!-- RIGHT: level picker + subjects -->
+          <div class="profile-right">
+            <div class="section-block" id="levelSection">
+              <div class="section-title">📚 Study Level &amp; Subjects</div>
+
+              <div class="level-toggle">
+                <button class="level-btn active" id="btnFoundation">
+                  Foundation
+                </button>
+                <button class="level-btn" id="btnDiploma">Diploma</button>
+                <button class="level-btn" id="btnDegree">Degree</button>
+              </div>
+
+              <div class="subject-counter" id="subjectCounter">
+                0 / 4 SUBJECTS SELECTED
+              </div>
+              <div id="subjectsContainer"></div>
+            </div>
+          </div>
+          <!-- /profile-right -->
+        </div>
+        <!-- /profile-grid -->
+      </div>
+      <!-- /loggedInView -->
+    </main>
+
+    <!-- Selection tray (mirrors Android selection_tray slide-up) -->
+    <div class="selection-tray" id="selectionTray">
+      <div class="tray-header">
+        <span class="tray-count" id="trayCount">0 / 4</span>
+        <button class="tray-save-btn" id="saveTrayBtn">Save</button>
+      </div>
+      <div class="tray-chips" id="trayChips"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script type="module">
+      import { initApp } from "./js/app.js";
+      initApp("profile");
+    </script>
+    <script type="module" src="js/profile.js"></script>
+  </body>
+</html>

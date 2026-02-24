@@ -1,0 +1,40 @@
+# Gradify-Web - .gitignore
+
+# Environment and secrets
+.env
+.env.local
+*.env
+config.local.js
+firebase-config.local.js
+
+# PHP backend secrets — NEVER commit
+api/config.php
+
+# Node (if used for build tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Build/dist (if applicable)
+dist/
+build/
+
+# Cache
+.cache/
+*.cache
+
+# Logs
+*.log
+logs/
+
+# Temp files
+*.tmp
+*.temp

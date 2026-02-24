@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings – Gradify</title>
+    <link rel="stylesheet" href="css/variables.css" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
+    <style>
+      .settings-layout {
+        max-width: 600px;
+        margin: 0 auto;
+        padding-top: calc(var(--nav-height) + 24px);
+      }
+      .settings-group {
+        background: var(--color-card-bg);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        margin-bottom: var(--spacing-md);
+        box-shadow: var(--shadow-xs);
+      }
+      .settings-group-title {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--color-primary);
+        padding: var(--spacing-sm) var(--spacing-md) 4px;
+        opacity: 0.7;
+      }
+      .settings-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px var(--spacing-md);
+        border-bottom: 1px solid var(--color-divider);
+        cursor: pointer;
+        transition: background var(--transition-fast);
+      }
+      .settings-row:last-child {
+        border-bottom: none;
+      }
+      .settings-row:hover {
+        background: var(--color-email-pill-bg);
+      }
+      .settings-row-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .settings-row-icon {
+        font-size: 20px;
+        width: 28px;
+        text-align: center;
+      }
+      .settings-row-label {
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .settings-row-sub {
+        font-size: 12px;
+        opacity: 0.55;
+        margin-top: 2px;
+      }
+      .settings-row-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .settings-val {
+        font-size: 13px;
+        opacity: 0.55;
+      }
+      .settings-chevron {
+        opacity: 0.3;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-loader" id="pageLoader">
+      <div class="loader-logo">
+        <span style="color: var(--color-glow)">G</span>radify
+      </div>
+      <div class="spinner"></div>
+    </div>
+    <div class="toast-container" id="toastContainer"></div>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div style="font-size: 22px; font-weight: 700">
+          <span style="color: var(--color-hero-cards)">G</span
+          ><span style="color: var(--color-main-bg)">radify</span>
+        </div>
+      </div>
+      <div
+        class="sidebar-profile"
+        id="sidebarProfile"
+        onclick="navigate('profile.html')"
+      >
+        <div class="sidebar-profile-avatar">
+          <img
+            id="sidebarAvatar"
+            src=""
+            alt="Avatar"
+            onerror="this.src = 'assets/icons/avatar-placeholder.svg'"
+          />
+        </div>
+        <div>
+          <div class="sidebar-profile-name" id="sidebarName">Hello!</div>
+          <div class="sidebar-profile-sub" id="sidebarEmail">
+            Tap to manage account
+          </div>
+        </div>
+      </div>
+      <div class="sidebar-exam-countdown" id="sidebarExamCountdown">
+        <div
+          style="
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--color-hero-cards);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+          "
+        >
+          📅 Exam Countdown
+        </div>
+        <div class="exam-timer-row">
+          <span style="font-size: 11px; color: rgba(250, 246, 233, 0.7)"
+            >Quiz 1</span
+          ><span class="badge badge-dark" id="q1Timer">…</span>
+        </div>
+        <div class="exam-timer-row">
+          <span style="font-size: 11px; color: rgba(250, 246, 233, 0.7)"
+            >Quiz 2</span
+          ><span class="badge badge-dark" id="q2Timer">…</span>
+        </div>
+        <div class="exam-timer-row">
+          <span style="font-size: 11px; color: rgba(250, 246, 233, 0.7)"
+            >End Term</span
+          ><span class="badge badge-dark" id="etTimer">…</span>
+        </div>
+      </div>
+      <div class="sidebar-nav">
+        <a class="sidebar-item" href="index.html"
+          ><span class="icon">🏠</span> Dashboard</a
+        >
+        <a class="sidebar-item" href="lectures.html"
+          ><span class="icon">🎬</span> Lectures</a
+        >
+        <a class="sidebar-item" href="pyq.html"
+          ><span class="icon">📝</span> PYQ Practice</a
+        >
+        <a class="sidebar-item" href="notes.html"
+          ><span class="icon">🗒️</span> My Notes</a
+        >
+        <a class="sidebar-item" href="tools.html"
+          ><span class="icon">🧮</span> Tools</a
+        >
+        <a class="sidebar-item" href="stats.html"
+          ><span class="icon">📊</span> Study Stats</a
+        >
+        <div class="sidebar-divider"></div>
+        <a class="sidebar-item active" href="settings.html"
+          ><span class="icon">⚙️</span> Settings</a
+        >
+        <a class="sidebar-item" href="profile.html"
+          ><span class="icon">👤</span> Profile</a
+        >
+        <a class="sidebar-item" href="developers.html"
+          ><span class="icon">👨‍💻</span> Developers</a
+        >
+      </div>
+      <div class="sidebar-footer">
+        <button class="btn btn-ghost btn-block" id="logoutBtn">
+          <span>🔐</span> <span id="logoutBtnText">Login / Sign Up</span>
+        </button>
+      </div>
+    </nav>
+    <header class="app-nav">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <button class="nav-icon-btn" onclick="history.back()" aria-label="Back">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+        <button class="nav-icon-btn" id="menuBtn" aria-label="Menu">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+          >
+            <line x1="4" y1="6" x2="20" y2="6" />
+            <line x1="4" y1="12" x2="20" y2="12" />
+            <line x1="4" y1="18" x2="20" y2="18" />
+          </svg>
+        </button>
+        <span style="font-weight: 700; font-size: 18px">⚙️ Settings</span>
+      </div>
+      <div class="nav-actions">
+        <div class="nav-avatar" onclick="navigate('profile.html')">
+          <img
+            id="navAvatar"
+            src=""
+            alt="Profile"
+            onerror="this.src = 'assets/icons/avatar-placeholder.svg'"
+          />
+        </div>
+      </div>
+    </header>
+    <main class="main-content settings-layout">
+      <!-- Appearance -->
+      <div
+        class="settings-group-title"
+        style="padding-left: 0; padding-top: 8px"
+      >
+        APPEARANCE
+      </div>
+      <div class="settings-group">
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">🎨</span>
+            <div>
+              <div class="settings-row-label">Accent Color</div>
+              <div class="settings-row-sub">Lime green · App default</div>
+            </div>
+          </div>
+          <div class="settings-row-right">
+            <div
+              style="
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                background: var(--color-hero-cards);
+                border: 2px solid var(--color-divider);
+              "
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div class="settings-group-title" style="padding-left: 0">STUDY</div>
+      <div class="settings-group">
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">⏱</span>
+            <div>
+              <div class="settings-row-label">Study Timer</div>
+              <div class="settings-row-sub">
+                Track time on lectures &amp; PYQs
+              </div>
+            </div>
+          </div>
+          <div class="settings-row-right">
+            <label class="toggle"
+              ><input type="checkbox" id="studyTimerToggle" checked /><span
+                class="toggle-slider"
+              ></span
+            ></label>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">💾</span>
+            <div>
+              <div class="settings-row-label">Auto-save Notes</div>
+              <div class="settings-row-sub">
+                Save notes automatically while typing
+              </div>
+            </div>
+          </div>
+          <div class="settings-row-right">
+            <label class="toggle"
+              ><input type="checkbox" id="autoSaveToggle" checked /><span
+                class="toggle-slider"
+              ></span
+            ></label>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">▶️</span>
+            <div>
+              <div class="settings-row-label">Auto-play Next</div>
+              <div class="settings-row-sub">
+                Automatically play next lecture
+              </div>
+            </div>
+          </div>
+          <div class="settings-row-right">
+            <label class="toggle"
+              ><input type="checkbox" id="autoPlayToggle" checked /><span
+                class="toggle-slider"
+              ></span
+            ></label>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">🔁</span>
+            <div>
+              <div class="settings-row-label">Resume Lectures</div>
+              <div class="settings-row-sub">
+                Continue from where you stopped
+              </div>
+            </div>
+          </div>
+          <div class="settings-row-right">
+            <label class="toggle"
+              ><input type="checkbox" id="resumeToggle" checked /><span
+                class="toggle-slider"
+              ></span
+            ></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI -->
+      <div class="settings-group-title" style="padding-left: 0">
+        AI ASSISTANT
+      </div>
+      <div class="settings-group">
+        <div class="settings-row" id="apiKeyRow">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">🔑</span>
+            <div>
+              <div class="settings-row-label">Gemini API Key</div>
+              <div class="settings-row-sub" id="apiKeyStatus">
+                Not configured
+              </div>
+            </div>
+          </div>
+          <div class="settings-row-right">
+            <span class="settings-chevron">›</span>
+          </div>
+        </div>
+        
+        <!-- Gemini API key input -->
+        <div id="apiKeySection" style="display: none; padding: var(--spacing-md); border-bottom: 1px solid var(--color-divider); background: var(--color-main-bg);">
+          <h4 style="margin-bottom: 8px">🔑 Add Gemini API Key</h4>
+          <p style="font-size: 12px; opacity: 0.6; margin-bottom: 12px">
+            Get a free API key from
+            <a href="https://aistudio.google.com" target="_blank" style="color: var(--color-glow)">Google AI Studio</a>. Stored locally only.
+          </p>
+          <div class="form-group" style="margin-bottom: 12px;">
+            <input type="password" class="form-input" id="apiKeyInput" placeholder="AIzaSy…" style="width: 100%;" />
+          </div>
+          <div style="display: flex; gap: 8px">
+            <button class="btn btn-ghost" onclick="document.getElementById('apiKeySection').style.display = 'none'" style="flex: 1;">Cancel</button>
+            <button class="btn btn-primary" id="saveApiKeyBtn" style="flex: 1;">Save Key</button>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">🧠</span>
+            <div>
+              <div class="settings-row-label">Send Whole History</div>
+              <div class="settings-row-sub">
+                Send entire chat history as context
+              </div>
+            </div>
+          </div>
+          <div class="settings-row-right">
+            <label class="toggle"
+              ><input type="checkbox" id="sendWholeHistoryToggle" /><span
+                class="toggle-slider"
+              ></span
+            ></label>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">🔤</span>
+            <div>
+              <div class="settings-row-label">Use Captions for Context</div>
+              <div class="settings-row-sub">
+                Send captions instead of video link (Faster)
+              </div>
+            </div>
+          </div>
+          <div class="settings-row-right">
+            <label class="toggle"
+              ><input type="checkbox" id="useCaptionsToggle" checked /><span
+                class="toggle-slider"
+              ></span
+            ></label>
+          </div>
+        </div>
+        <div class="settings-row" id="aiModelRow">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">🤖</span>
+            <div>
+              <div class="settings-row-label">AI Model</div>
+              <div class="settings-row-sub">Select the Gemini model to use</div>
+            </div>
+          </div>
+          <div class="settings-row-right">
+            <select id="aiModelSelect" class="form-input" style="padding: 6px 8px; border-radius: 8px; width: 140px; background: var(--color-card-bg); font-family: inherit; font-size: 13px; font-weight: 500;">
+              <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+              <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+              <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+              <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+              <option value="gemini-3-flash-preview">Gemini 3 Flash Prev</option>
+            </select>
+          </div>
+        </div>
+        <div
+          class="settings-row"
+          style="
+            flex-direction: column;
+            align-items: stretch;
+            padding-bottom: 20px;
+          "
+        >
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 12px;
+            "
+          >
+            <div class="settings-row-left">
+              <span class="settings-row-icon">💬</span>
+              <div>
+                <div class="settings-row-label">Message History Count</div>
+                <div class="settings-row-sub">
+                  Number of past messages to include
+                </div>
+              </div>
+            </div>
+            <div class="settings-row-right">
+              <span
+                class="settings-val"
+                id="messageHistoryValue"
+                style="
+                  font-weight: 700;
+                  color: var(--color-primary);
+                  font-size: 16px;
+                "
+                >3</span
+              >
+            </div>
+          </div>
+          <input
+            type="range"
+            id="messageHistorySlider"
+            min="1"
+            max="6"
+            value="3"
+            style="width: 100%; accent-color: var(--color-tray-bg)"
+          />
+        </div>
+      </div>
+
+      <!-- Data -->
+      <div class="settings-group-title" style="padding-left: 0">
+        DATA & CACHE
+      </div>
+      <div class="settings-group">
+        <div class="settings-row" id="clearCacheRow">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">🗑️</span>
+            <div>
+              <div class="settings-row-label">Clear Cache</div>
+              <div class="settings-row-sub" id="cacheSize">Calculating…</div>
+            </div>
+          </div>
+          <div class="settings-row-right">
+            <span class="settings-chevron">›</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">☁️</span>
+            <div>
+              <div class="settings-row-label">Cloud Sync</div>
+              <div class="settings-row-sub">
+                Sync preferences and API keys across devices
+              </div>
+            </div>
+          </div>
+          <div class="settings-row-right">
+            <label class="toggle"
+              ><input type="checkbox" id="cloudSyncToggle" /><span
+                class="toggle-slider"
+              ></span
+            ></label>
+          </div>
+        </div>
+        <div class="settings-row" id="exportDataRow">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">📤</span>
+            <div>
+              <div class="settings-row-label">Export Notes</div>
+              <div class="settings-row-sub">
+                Download all your notes as JSON
+              </div>
+            </div>
+          </div>
+          <div class="settings-row-right">
+            <span class="settings-chevron">›</span>
+          </div>
+        </div>
+        <div class="settings-row" id="importDataRow">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">📥</span>
+            <div>
+              <div class="settings-row-label">Import Notes</div>
+              <div class="settings-row-sub">Restore notes from a backup</div>
+            </div>
+          </div>
+          <div class="settings-row-right">
+            <span class="settings-chevron">›</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- About -->
+      <div class="settings-group-title" style="padding-left: 0">ABOUT</div>
+      <div class="settings-group">
+        <div
+          class="settings-row"
+          onclick="window.open('https://github.com/gtxPrime/Gradify', '_blank')"
+        >
+          <div class="settings-row-left">
+            <span class="settings-row-icon">🔗</span>
+            <div>
+              <div class="settings-row-label">GitHub</div>
+              <div class="settings-row-sub">View or contribute source code</div>
+            </div>
+          </div>
+          <div class="settings-row-right">
+            <span class="settings-chevron">›</span>
+          </div>
+        </div>
+        <div
+          class="settings-row"
+          onclick="window.open('https://forms.gle/ch7FinUjHQxDhL4c8', '_blank')"
+        >
+          <div class="settings-row-left">
+            <span class="settings-row-icon">✏️</span>
+            <div>
+              <div class="settings-row-label">Contribute Data</div>
+              <div class="settings-row-sub">Add lectures or PYQ questions</div>
+            </div>
+          </div>
+          <div class="settings-row-right">
+            <span class="settings-chevron">›</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <span class="settings-row-icon">ℹ️</span>
+            <div>
+              <div class="settings-row-label">Version</div>
+              <div class="settings-row-sub">Gradify Web v1.0.0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
+      <div style="height: 32px"></div>
+    </main>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script type="module">
+      import { initApp } from "./js/app.js";
+      initApp("settings");
+    </script>
+    <script type="module" src="js/settings.js"></script>
+  </body>
+</html>

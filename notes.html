@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Gradify – Manage your study notes." />
+  <title>Notes – Gradify</title>
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
+  <style>
+    .notes-layout { max-width: 800px; margin: 0 auto; padding-top: calc(var(--nav-height) + 16px); }
+
+    .notes-topbar {
+      display: flex; gap: 8px; margin-bottom: var(--spacing-md); align-items: center;
+    }
+    .notes-search {
+      flex: 1; padding: 10px 16px; border-radius: var(--radius-full);
+      border: 1.5px solid var(--color-divider); background: var(--color-card-bg);
+      font-size: 14px; color: var(--color-text-icons);
+    }
+    .notes-search:focus { outline: none; border-color: var(--color-glow); }
+
+    .notes-filter-tabs {
+      display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;
+      margin-bottom: var(--spacing-md);
+      -ms-overflow-style: none; scrollbar-width: none;
+    }
+    .notes-filter-tabs::-webkit-scrollbar { display: none; }
+
+    .note-card {
+      background: var(--color-card-bg); border-radius: var(--radius-lg);
+      padding: var(--spacing-md); box-shadow: var(--shadow-xs);
+      border-left: 4px solid transparent;
+      cursor: pointer; transition: all var(--transition-base);
+      margin-bottom: var(--spacing-sm);
+    }
+    .note-card:hover { transform: translateX(4px); box-shadow: var(--shadow-sm); }
+    .note-card.important { border-left-color: var(--color-hero-cards); }
+    .note-card-header {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
+    }
+    .note-subject-badge {
+      display: inline-flex; align-items: center;
+      background: var(--color-email-pill-bg); border-radius: var(--radius-full);
+      padding: 3px 10px; font-size: 11px; font-weight: 600;
+      white-space: nowrap; margin-bottom: 6px;
+    }
+    .note-text {
+      font-size: 14px; line-height: 1.6;
+      display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .note-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: var(--spacing-sm); font-size: 11px; opacity: 0.5;
+    }
+    .note-ts-badge {
+      background: var(--color-email-pill-bg); padding: 2px 8px;
+      border-radius: var(--radius-full); font-size: 11px; font-weight: 600;
+    }
+    .note-delete-btn {
+      width: 28px; height: 28px; border-radius: 50%; background: transparent;
+      border: 1px solid var(--color-divider); display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: background 0.2s, transform 0.2s; color: var(--color-error);
+      font-size: 13px; flex-shrink: 0;
+    }
+    .note-delete-btn:hover { background: rgba(244,67,54,0.1); transform: scale(1.1); }
+
+    /* New note form */
+    .new-note-fab {
+      position: fixed; bottom: 24px; right: 20px;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--color-tray-bg); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; box-shadow: var(--shadow-lg); cursor: pointer; z-index: 100;
+      transition: transform var(--transition-spring), box-shadow var(--transition-base);
+      border: none;
+    }
+    .new-note-fab:hover { transform: scale(1.1) rotate(45deg); box-shadow: var(--shadow-xl); }
+
+    .new-note-sheet {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--color-card-bg); border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      padding: var(--spacing-lg); z-index: 200;
+      box-shadow: var(--shadow-xl); transform: translateY(100%);
+      transition: transform var(--transition-slow); max-height: 85vh; overflow-y: auto;
+    }
+    .new-note-sheet.open { transform: translateY(0); }
+    .sheet-backdrop {
+      position: fixed; inset: 0; background: rgba(34,51,59,0.4);
+      z-index: 199; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .sheet-backdrop.open { opacity: 1; pointer-events: all; }
+  </style>
+</head>
+<body>
+
+<div class="page-loader" id="pageLoader"><div class="loader-logo"><span style="color:var(--color-glow)">G</span>radify</div><div class="spinner"></div></div>
+<div class="toast-container" id="toastContainer"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header"><div style="font-size:22px;font-weight:700"><span style="color:var(--color-hero-cards)">G</span><span style="color:var(--color-main-bg)">radify</span></div></div>
+  <div class="sidebar-profile" id="sidebarProfile" onclick="navigate('profile.html')"><div class="sidebar-profile-avatar"><img id="sidebarAvatar" src="" alt="Avatar" onerror="this.src='assets/icons/avatar-placeholder.svg'" /></div><div><div class="sidebar-profile-name" id="sidebarName">Hello!</div><div class="sidebar-profile-sub" id="sidebarEmail">Tap to manage account</div></div></div>
+  <div class="sidebar-exam-countdown" id="sidebarExamCountdown">
+    <div style="font-size:11px;font-weight:600;color:var(--color-hero-cards);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">📅 Exam Countdown</div>
+    <div class="exam-timer-row"><span style="font-size:11px;color:rgba(250,246,233,0.7)">Quiz 1</span><span class="badge badge-dark" id="q1Timer">…</span></div>
+    <div class="exam-timer-row"><span style="font-size:11px;color:rgba(250,246,233,0.7)">Quiz 2</span><span class="badge badge-dark" id="q2Timer">…</span></div>
+    <div class="exam-timer-row"><span style="font-size:11px;color:rgba(250,246,233,0.7)">End Term</span><span class="badge badge-dark" id="etTimer">…</span></div>
+  </div>
+  <div class="sidebar-nav">
+    <a class="sidebar-item" href="index.html"><span class="icon">🏠</span> Dashboard</a>
+    <a class="sidebar-item" href="lectures.html"><span class="icon">🎬</span> Lectures</a>
+    <a class="sidebar-item" href="pyq.html"><span class="icon">📝</span> PYQ Practice</a>
+    <a class="sidebar-item active" href="notes.html"><span class="icon">🗒️</span> My Notes</a>
+    <a class="sidebar-item" href="tools.html"><span class="icon">🧮</span> Tools</a>
+    <a class="sidebar-item" href="stats.html"><span class="icon">📊</span> Study Stats</a>
+    <div class="sidebar-divider"></div>
+    <a class="sidebar-item" href="settings.html"><span class="icon">⚙️</span> Settings</a>
+    <a class="sidebar-item" href="profile.html"><span class="icon">👤</span> Profile</a>
+    <a class="sidebar-item" href="developers.html"><span class="icon">👨‍💻</span> Developers</a>
+  </div>
+  <div class="sidebar-footer"><button class="btn btn-ghost btn-block" id="logoutBtn"><span>🔐</span> <span id="logoutBtnText">Login / Sign Up</span></button></div>
+</nav>
+
+<header class="app-nav">
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="nav-icon-btn" onclick="history.back()" aria-label="Back">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button class="nav-icon-btn" id="menuBtn" aria-label="Menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+    </button>
+    <span style="font-weight:700;font-size:18px">🗒️ My Notes</span>
+  </div>
+  <div class="nav-actions">
+    <div class="nav-avatar" onclick="navigate('profile.html')"><img id="navAvatar" src="" alt="Profile" onerror="this.src='assets/icons/avatar-placeholder.svg'" /></div>
+  </div>
+</header>
+
+<main class="main-content notes-layout">
+  <div class="notes-topbar">
+    <input type="search" class="notes-search" id="notesSearch" placeholder="🔍  Search notes…" />
+    <button class="btn btn-ghost btn-icon" id="importantFilterBtn" title="Show important only">⭐</button>
+  </div>
+
+  <div class="notes-filter-tabs" id="subjectFilterTabs">
+    <div class="chip active" data-subject="all">All</div>
+    <!-- Subject chips populated by JS -->
+  </div>
+
+  <div id="notesCount" style="font-size:12px;opacity:0.5;margin-bottom:12px">Loading notes…</div>
+
+  <div id="notesList"></div>
+
+  <div id="emptyNotes" style="display:none">
+    <div class="empty-state">
+      <div class="empty-state-icon">🗒️</div>
+      <h3 class="empty-state-title">No Notes Yet</h3>
+      <p class="empty-state-sub">Add notes while watching lectures or tap the + button.</p>
+    </div>
+  </div>
+  <div style="height:80px"></div>
+</main>
+
+<!-- FAB -->
+<button class="new-note-fab" id="newNoteFab" title="Add note" aria-label="Add note">+</button>
+
+<!-- New note sheet -->
+<div class="sheet-backdrop" id="sheetBackdrop"></div>
+<div class="new-note-sheet" id="newNoteSheet">
+  <div class="modal-handle"></div>
+  <h3 style="margin-bottom:var(--spacing-md)">📝 New Note</h3>
+  <div class="form-group">
+    <label class="form-label">Subject</label>
+    <select class="form-select" id="newNoteSubject">
+      <option value="General">General</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Note</label>
+    <textarea class="form-textarea" id="newNoteText" placeholder="Write your note here…" rows="5"></textarea>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:var(--spacing-md)">
+    <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer">
+      <input type="checkbox" id="newNoteImportant" />
+      ⭐ Mark as important
+    </label>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-ghost" onclick="closeNewNoteSheet()" style="flex:1">Cancel</button>
+    <button class="btn btn-primary" id="saveNewNoteBtn" style="flex:2">Save Note</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script type="module">
+  import { initApp } from './js/app.js';
+  initApp('notes');
+</script>
+<script type="module" src="js/notes.js"></script>
+
+</body>
+</html>
