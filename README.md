@@ -6,7 +6,8 @@
 
 **IIT-M BS in Data Science: Your Complete Academic Companion—Now on the Web!**
 
-[![Platform](https://img.shields.io/badge/Platform-Web-blue.svg)](https://gradify.in)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen.svg)](https://gradifyit.netlify.app/)
+[![Android App](https://img.shields.io/badge/Companion-Android_App-blue.svg)](https://github.com/gtxPrime/gradify)
 [![Tech Stack](https://img.shields.io/badge/Tech-HTML%2FCSS%2FJS-yellow.svg)](#)
 [![Hosting](https://img.shields.io/badge/Hosting-Firebase-orange.svg)](#)
 
@@ -23,6 +24,19 @@
 > "Seamless learning across all devices."
 
 Whether you are moving from your mobile to a desktop environment or preferring web tools, your progress, notes, and activity remain perfectly synced.
+
+---
+
+## 📱 Gradify Android Companion
+
+The web version is designed to work in synergy with the **Gradify Android App**. While the web version offers a large-screen experience for lectures and calculators, the Android app provides on-the-go access with native features:
+
+- 🤖 **Native Jetpack Compose UI**: Smooth, fluid mobile experience.
+- 📚 **Comprehensive Course Support**: Foundation to Diploma levels (ML, Java, DBMS, etc.).
+- 📝 **Offline-First Notes**: Access your study materials even with spotty connectivity.
+- 💾 **Deep Sync**: Automatic synchronization of your learning progress via Firebase.
+
+👉 **Explore the Android Repo: [gtxPrime/gradify](https://github.com/gtxPrime/gradify)**
 
 ---
 
@@ -71,4 +85,6 @@ Detailed documentation available inside the `docs/` folder:
 **Developed by gtxPrime**
 
 - GitHub: [@gtxPrime](https://github.com/gtxprime)
+- Web App: [Live on Netlify](https://gradifyit.netlify.app/)
 - Web Repository: [Gradify Web](https://github.com/gtxPrime/gradify-web)
+- Android Repository: [Gradify Android](https://github.com/gtxPrime/gradify)
