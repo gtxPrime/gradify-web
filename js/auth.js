@@ -16,12 +16,12 @@ const FB_AUTH_URL =
 // The config is stored in localStorage after first setup, or can be embedded
 // for production. This approach avoids committing secrets to git.
 const DEFAULT_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: "",
+  apiKey: "AIzaSyDx6_V2F4ewm7Xo99vrIJPOXvCZ_OYG7X8",
+  authDomain: "alpha-grade-1b283.firebaseapp.com",
+  projectId: "alpha-grade-1b283",
+  storageBucket: "alpha-grade-1b283.firebasestorage.app",
+  messagingSenderId: "53909140346",
+  appId: "1:53909140346:web:e46bc48c4cb8400d695cc3",
 };
 
 function getFirebaseConfig() {
